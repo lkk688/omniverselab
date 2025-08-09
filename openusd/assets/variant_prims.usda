@@ -1,0 +1,54 @@
+#usda 1.0
+(
+    defaultPrim = "World"
+)
+
+def Xform "World"
+{
+    def Xform "Box"
+    {
+        def Scope "Geometry" (
+            variants = {
+                string shapes = "Cylinder"
+            }
+            prepend variantSets = "shapes"
+        )
+        {
+            variantSet "shapes" = {
+                "Cube" {
+                    def Cube "Cube"
+                    {
+                    }
+
+                }
+                "Cylinder" {
+                    def Cylinder "Cylinder"
+                    {
+                    }
+
+                }
+                "Sphere" {
+                    def Sphere "Sphere"
+                    {
+                    }
+
+                }
+            }
+        }
+
+        def Scope "Materials"
+        {
+            def Material "BoxMat"
+            {
+            }
+        }
+    }
+
+    def Scope "Environment"
+    {
+        def DistantLight "SkyLight"
+        {
+        }
+    }
+}
+

@@ -1,0 +1,71 @@
+{
+    "version": "1.0",
+    "file_records": [
+        {
+            "source_url": "omniverse://localhost/NVIDIA/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Cube_A/CubeBox_A02_16cm_PR_NVD_01.usd",
+            "source_hash": "d85109868f6e4adaed0fcacbe9a4ee56e4913130",
+            "target_url": "./CubeBox_A02_16cm_PR_NVD_01.usd",
+            "target_hash": "d3f9b114ad913d02e71b83b002f64f87a0d1ef32"
+        },
+        {
+            "source_url": "omniverse://localhost/NVIDIA/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Cube_A/materials/CubeBox.material.usd",
+            "source_hash": "e9b01b6cb8078e112aeba060f63af199ebe7aa6c",
+            "target_url": "./materials/CubeBox.material.usd",
+            "target_hash": "9bf294941b24589cdbab302576d4f78554dc1f33"
+        },
+        {
+            "source_url": "omniverse://localhost/NVIDIA/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Cube_A/materials/M_CubeBox_Cardboard_01.mdl",
+            "source_hash": "176427acd0c5dd33883ec7f21b223eff571a425f",
+            "target_url": "./materials/M_CubeBox_Cardboard_01.mdl",
+            "target_hash": "cc1d9548e7597c1594d4162aa32237c759ded8f1"
+        },
+        {
+            "source_url": "omniverse://localhost/NVIDIA/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Cube_A/materials/M_CubeBox_Decal_01.mdl",
+            "source_hash": "c30d14b2fb484465646cd06269e3bd787ea8bd39",
+            "target_url": "./materials/M_CubeBox_Decal_01.mdl",
+            "target_hash": "d890783ae6e5676057f60cb4da933cefd68c7d85"
+        },
+        {
+            "source_url": "omniverse://localhost/NVIDIA/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Cube_A/materials/textures/T_CubeBox_A01_Tile_Albedo.png",
+            "source_hash": "8655d26404f69b2b093e037d0fe1445d91dc674f",
+            "target_url": "./materials/textures/T_CubeBox_A01_Tile_Albedo.png",
+            "target_hash": "7471df1e943ccc854395fa3d5f544447038b3caf"
+        },
+        {
+            "source_url": "omniverse://localhost/NVIDIA/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Cube_A/materials/textures/T_CubeBox_A01_Trim_Albedo.png",
+            "source_hash": "1826cae4f51932ed97dde1a616559012b9b04646",
+            "target_url": "./materials/textures/T_CubeBox_A01_Trim_Albedo.png",
+            "target_hash": "e7026e33fd72653127cc319c83057fb29434a5d4"
+        },
+        {
+            "source_url": "omniverse://localhost/NVIDIA/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Cube_A/materials/textures/T_CubeBox_A01_Tile_ORM.png",
+            "source_hash": "88b102efbc065c1a81432304cb8d840fa3225230",
+            "target_url": "./materials/textures/T_CubeBox_A01_Tile_ORM.png",
+            "target_hash": "37c2a43fa75d6f69cafe7f8c1e2b2bd746b18a28"
+        },
+        {
+            "source_url": "omniverse://localhost/NVIDIA/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Cube_A/materials/textures/T_CubeBox_A01_Trim_ORM.png",
+            "source_hash": "a38951554f3663ca4aeb4775c760c246cb43d5d8",
+            "target_url": "./materials/textures/T_CubeBox_A01_Trim_ORM.png",
+            "target_hash": "aa567d3a39dee8260f15516672fca253e5d517ed"
+        },
+        {
+            "source_url": "omniverse://localhost/NVIDIA/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Cube_A/materials/textures/T_CubeBox_A01_Tile_Normal.png",
+            "source_hash": "25ef615046c0c464bc832b6605cb95bc8544dc06",
+            "target_url": "./materials/textures/T_CubeBox_A01_Tile_Normal.png",
+            "target_hash": "9167d5dafb0c720e7b446cc22e66b127000c42d8"
+        },
+        {
+            "source_url": "omniverse://localhost/NVIDIA/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Cube_A/materials/textures/T_CubeBox_A01_Trim_Opacity.png",
+            "source_hash": "3b5fb842a7d12680ce998569d11f3dd93a6dc942",
+            "target_url": "./materials/textures/T_CubeBox_A01_Trim_Opacity.png",
+            "target_hash": "f0a6137f7a8da11c05ee66dd23c53e101ae5d3fc"
+        },
+        {
+            "source_url": "omniverse://localhost/NVIDIA/Assets/DigitalTwin/Assets/Warehouse/Shipping/Cardboard_Boxes/Cube_A/materials/textures/T_CubeBox_A01_Trim_Normal.png",
+            "source_hash": "6a9c865e43fd656547ae1ef795eac24d54733793",
+            "target_url": "./materials/textures/T_CubeBox_A01_Trim_Normal.png",
+            "target_hash": "9bb3f6b10f31ba7aaea9f0b45ca60b04b2bdaa2c"
+        }
+    ]
+}
