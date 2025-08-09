@@ -205,3 +205,8 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+openusd/assets/*
+openusd/usd_files/*
+.DS_Store
+omniverselab.code-workspace
