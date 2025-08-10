@@ -5,6 +5,8 @@ Build on foundational knowledge to explore advanced topics in OpenUSD, preparing
 
 installing usdview
 
+![USD view](figs/usdview.png)
+
 ## Course2: Learn OpenUSD: Asset Structure Principles and Content Aggregation
 
 ## Course3: Learn OpenUSD: Developing Data Exchange Pipelines
