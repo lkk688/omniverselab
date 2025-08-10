@@ -27,6 +27,90 @@ mkdocs build
 mkdocs gh-deploy
 ```
 
+## OpenUSD
+The OpenUSD source code is located at the [OpenUSD Github repository](https://github.com/PixarAnimationStudios/OpenUSD). You can clone the repository and follow the repository’s build instructions to build OpenUSD from the source. Alternatively, NVIDIA provides pre-built binaries for Windows and Linux from [here](https://developer.nvidia.com/usd?sortBy=developer_learning_library%2Fsort%2Ffeatured_in.usd_resources%3Adesc%2Ctitle%3Aasc&hitsPerPage=6#section-getting-started). If you just need to use the OpenUSD Python API, you can install usd-core directly from PyPI, i.e., `pip install usd-core`.
+
+### Pre-built binaries for Windows
+In Windows, Right-click the `usd.py311.windows-x86_64.usdview.release-0.25.05-25f3d3d8.zip` → “Extract All…” to extract the contents to a folder. Open Command Prompt or PowerShell, run the setup script:
+
+To launch `usdview`, execute the `%USDROOT%\scripts\usdview_gui.bat` script from Explorer, or invoke the executable from a Batch prompt using:
+```bat
+(base) PS E:\Shared\usd.py311.windows-x86_64.usdview.release-0.25.05-25f3d3d8> .\scripts\usdview.bat .\share\usd\tutorials\traversingStage\HelloWorld.usda
+```
+
+### Pre-built binaries for Linux
+```bash
+(py312) lkk@lkk-intel13:~/Developer$ unzip usd.py311.manylinux_2_35_x86_64.usdview.release@0.25.05-25f3d3d8.zip -d ./openusd/
+```
+
+To launch `usdview`, execute:
+```shell
+(py312) lkk@lkk-intel13:~/Developer/openusd$ ./scripts/usdview.sh ./share/usd/tutorials/traversingStage/HelloWorld.usda
+```
+
+To execute `usdcat` and inspect the contents of a USD stage, invoke the executable from a bash terminal using:
+```shell
+(py312) lkk@lkk-intel13:~/Developer/openusd$ ./scripts/usdcat.sh ./share/usd/tutorials/convertingLayerFormats/Sphere.usd
+Activated USD python/tools from /home/lkk/Developer/openusd
+#usda 1.0
+
+def Sphere "sphere"
+{
+}
+```
+
+If you wish to configure a bash terminal with environment variables defined to use OpenUSD tools without the need for>
+```shell
+(py312) lkk@lkk-intel13:~/Developer/openusd$ chmod +x ./scripts/set_usd_env.sh
+(py312) lkk@lkk-intel13:~/Developer/openusd$ . ./scripts/set_usd_env.sh
+Activated USD python/tools from /home/lkk/Developer/openusd
+```
+This is same to `source ./scripts/set_usd_env.sh`. This will update your shell’s environment with: PATH including openusd/bin; PYTHONPATH pointing to lib/python; LD_LIBRARY_PATH for shared libraries. You can add this to `~/.bashrc` to make it persistent: `source ~/Developer/openusd/scripts/set_usd_env.sh`
+
+This will allow you to invoke the provided compiled tools and libraries located in `$USDROOT/bin`, without having to script
+```bash
+(py312) lkk@lkk-intel13:~/Developer/openusd$ usdcat ./share/usd/tutorials/convertingLayerFormats/Sphere.usd
+#usda 1.0
+
+def Sphere "sphere"
+{
+}
+```
+
+The Python interpreter is also setup by the `set_usd_env.sh` and the Python interpreter will then resolve OpenUSD imports, allowing OpenUSD APIs to be used in the prompt:
+```bash
+(py312) lkk@lkk-intel13:~/Developer/openusd$ python
+Python 3.11.11 (tags/v3.11.11-dirty:d03b868, Feb  7 2025, 19:34:23) [GCC 7.3.1 20180303 (Red Hat 7.3.1-5)] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> from pxr import Usd, UsdGeom
+```
+Save the following code to a python file
+```python
+from pxr import Usd, UsdGeom
+stage = Usd.Stage.CreateInMemory()
+cube = UsdGeom.Cube.Define(stage, "/myCube")
+cube.GetSizeAttr().Set(3)
+print(stage.ExportToString())
+```
+Run the python file:
+```bash
+(py312) lkk@lkk-intel13:~/Developer/openusd$ nano pytest.py
+(py312) lkk@lkk-intel13:~/Developer/openusd$ python pytest.py 
+#usda 1.0
+(
+    doc = """Generated from Composed Stage of root layer 
+"""
+)
+
+def Cube "myCube"
+{
+    double size = 3
+}
+(py312) lkk@lkk-intel13:~/Developer/openusd$ python -c "from pxr import Usd;print(Usd.GetVersion())"
+(0, 25, 5)
+```
+
+
 ## NVIDIA Omniverse for Developers
 [Get Started with Omniverse](https://developer.nvidia.com/omniverse?sortBy=developer_learning_library%2Fsort%2Ffeatured_in.omniverse%3Adesc%2Ctitle%3Aasc&hitsPerPage=6#section-getting-started)
 [Documentation](https://docs.omniverse.nvidia.com/index.html)

@@ -1,4 +1,14 @@
-# OpenUSD
+# OpenUSD Foundations
+Developed by Pixar Animation Studios, OpenUSD is an open-source framework for creating, simulating, and collaborating in 3D worlds. OpenUSD is foundational to NVIDIA Omniverse. 
+
+The universal structure of OpenUSD allows developers to integrate multiple assets into a single "stage," enabling dynamic scene manipulation. Each OpenUSD asset contains independent data layer stacks, such as geometry, shading, or textures, which can be interchanged without affecting other elements. For example, in an OpenUSD stage in a kitchen environment, the data layers for a chair or stove can be swapped independently, enabling rapid scene updates.
+
+Important Links:
+    - [OpenUSD Documentation](https://docs.omniverse.nvidia.com/usd/latest/index.html)
+    - [OpenUSD GitHub](https://github.com/PixarAnimationStudios/OpenUSD)
+    - [OpenUSD Learning Path](https://www.nvidia.com/en-us/learn/learning-path/openusd/)
+
+
 Learn OpenUSD, the core of Omniverse's scene representation format. The main website is [link](https://www.nvidia.com/en-us/learn/learning-path/openusd/), it contains 7 courses in learn Open USD.
 
 ## Course1: Learn OpenUSD: Learning About Stages, Prims, and Attributes
@@ -242,3 +252,48 @@ Schemas give meaning to prims in OpenUSD, i.e., “What is this element? What ca
 
 ## Course3: Learn OpenUSD: Using Attributes
 [link](https://learn.nvidia.com/courses/course-detail?course_id=course-v1:DLI+S-OV-19+V1)
+openusd/01_Learn_OpenUSD_Using_Attributes.ipynb
+
+Activity 1: Retrieving Properties of a Prim
+
+Value resolution is the algorithm by which final values for properties or metadata are compiled from all sources. The algorithm consumes an ordered list of values including default values, timeSamples, and fallback values from the composition and returns the resolved value.
+
+Value resolution combines potentially many pieces of data together to produce a single value. It is distinct from composition, which caches the “indexing” of layers when a stage is opened or a new scene description is authored.
+	•	Composition builds a cached index of scene structure (prim-level).
+	•	Value resolution operates on the actual data (property/attribute values) and is not cached for memory efficiency.
+	•	Resolution order is from strongest to weakest opinion, regardless of the composition arc.
+
+Activity 2: Getting Values for Attributes
+
+Metadata in OpenUSD refers to a set of name-value pairs that provide additional, non-animatable information attached to prims or their properties. The concept is similar to properties, but it allows us to add custom information or annotations to scene description elements via a dictionary without modifying the underlying schema or data model.
+
+Metadata is stored separately from the primary data and can be accessed and modified independently. It is typically used to store additional information that is not directly related to the geometry or rendering of an object.
+
+Activity 3: Authoring Attributes
+
+Activity 4: Creating Additional Attributes.
+
+Activity 5: Modifying Attributes
+
+## Course4: Learn OpenUSD: Traversing Stages
+openusd/01_Learn_OpenUSD_Traversing_Stages.ipynb
+
+Stage traversal is the process of traversing the scenegraph of a stage with the purpose of querying or editing the scene data. We can traverse the scenegraph by iterating through child prims, accessing parent prims, and traversing the hierarchy to find specific prims of interest.
+
+## Course5: Learn OpenUSD: Understanding Model Kinds
+
+Kinds are a set of predefined categories that define the role and behavior of different prims within the scene hierarchy. These kinds include group, assembly, and component. The base class for group and component kinds is Model, which should not be assigned as any prim’s kind.
+
+## Course6: Learn OpenUSD: Setting Up Basic Animations
+
+openusd/01_Learn_OpenUSD_Setting_Up_Basic_Animations.ipynb
+
+In OpenUSD, timeCode and timeSample are two important concepts that enable us to work with animations and simulation in USD scenes.
+
+TimeCode is a point in time with no unit assigned to it. You can think of these as frames whose units are derived from the stage.
+
+TimeSample refers to the individual time-varying values associated with an attribute in USD. Each attribute can have a collection of timeSamples that map timeCode to the attribute’s data type values, allowing for animation over time.
+
+## Course7: Learn OpenUSD: An Introduction to Strength Ordering
+openusd/01_Learn_OpenUSD_Intro_to_Strength_Ordering.ipynb
+openusd/02_Learn_OpenUSD_Experimenting_With_VariantSets.ipynb
