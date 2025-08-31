@@ -1,0 +1,2514 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../openusd_foundations/">
+      
+      
+        <link rel="next" href="../omniverse_kit/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.9">
+    
+    
+      
+        <title>Applied Concepts - Omniverse Learning Lab</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.4af4bdda.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#openusd-applied-concepts" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Omniverse Learning Lab" class="md-header__button md-logo" aria-label="Omniverse Learning Lab" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Omniverse Learning Lab
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Applied Concepts
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Omniverse Learning Lab" class="md-nav__button md-logo" aria-label="Omniverse Learning Lab" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Omniverse Learning Lab
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    OpenUSD Foundations
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            OpenUSD Foundations
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../openusd_foundations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Foundations
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Applied Concepts
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Applied Concepts
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#course-1-learn-openusd-creating-composition-arcs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Course 1: Learn OpenUSD: Creating Composition Arcs
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setup-and-installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Setup and Installation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Setup and Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#installing-usdview" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing usdview
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Installing usdview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#download-and-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Download and Setup
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#linux-prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      Linux Prerequisites
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-usdview" class="md-nav__link">
+    <span class="md-ellipsis">
+      Running usdview
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adding-to-path-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adding to PATH (Optional)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setting-up-openusd-python-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      Setting Up OpenUSD Python Environment
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Setting Up OpenUSD Python Environment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#creating-virtual-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      Creating Virtual Environment
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#activating-the-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      Activating the Environment
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alternative-setup-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      Alternative Setup Method
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#installing-required-packages" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing Required Packages
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Installing Required Packages">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usd-core-library" class="md-nav__link">
+    <span class="md-ellipsis">
+      USD Core Library
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#additional-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      Additional Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#course-materials" class="md-nav__link">
+    <span class="md-ellipsis">
+      Course Materials
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#additional-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      Additional Resources
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-usd-concepts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core USD Concepts
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core USD Concepts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prims-the-foundation-of-usd" class="md-nav__link">
+    <span class="md-ellipsis">
+      Prims: The Foundation of USD
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Prims: The Foundation of USD">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#understanding-specs-and-opinions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Understanding Specs and Opinions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Property Types
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#working-with-specs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Working with Specs
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#layers-collaborative-scene-composition" class="md-nav__link">
+    <span class="md-ellipsis">
+      Layers: Collaborative Scene Composition
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Layers: Collaborative Scene Composition">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-are-layers" class="md-nav__link">
+    <span class="md-ellipsis">
+      What are Layers?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#collaborative-workflow-benefits" class="md-nav__link">
+    <span class="md-ellipsis">
+      Collaborative Workflow Benefits
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#layer-applications" class="md-nav__link">
+    <span class="md-ellipsis">
+      Layer Applications
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sublayers-strength-ordered-composition" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sublayers: Strength-Ordered Composition
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sublayers: Strength-Ordered Composition">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#when-to-use-sublayers" class="md-nav__link">
+    <span class="md-ellipsis">
+      When to Use Sublayers
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#practical-exercise" class="md-nav__link">
+    <span class="md-ellipsis">
+      Practical Exercise
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical Exercise">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#understanding-over-prims" class="md-nav__link">
+    <span class="md-ellipsis">
+      Understanding "Over" Prims
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-composition-arcs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Composition Arcs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#references-and-payloads-asset-reuse-and-performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      References and Payloads: Asset Reuse and Performance
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="References and Payloads: Asset Reuse and Performance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#references-modular-asset-composition" class="md-nav__link">
+    <span class="md-ellipsis">
+      References: Modular Asset Composition
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#payloads-on-demand-loading" class="md-nav__link">
+    <span class="md-ellipsis">
+      Payloads: On-Demand Loading
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#encapsulation-asset-self-containment" class="md-nav__link">
+    <span class="md-ellipsis">
+      Encapsulation: Asset Self-Containment
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Encapsulation: Asset Self-Containment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#understanding-encapsulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Understanding Encapsulation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#encapsulation-vs-unencapsulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Encapsulation vs. Unencapsulation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      Best Practices
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#practical-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Practical Example
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#default-prims" class="md-nav__link">
+    <span class="md-ellipsis">
+      Default Prims
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variant-sets-runtime-asset-variations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Variant Sets: Runtime Asset Variations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Variant Sets: Runtime Asset Variations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-are-variant-sets" class="md-nav__link">
+    <span class="md-ellipsis">
+      What are Variant Sets?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-use-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Use Cases
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-variant-sets-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      How Variant Sets Work
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variant-capabilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      Variant Capabilities
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#best-practices_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Best Practices
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#practical-example_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Practical Example
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inherit-and-specialize-arcs-advanced-inheritance-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      Inherit and Specialize Arcs: Advanced Inheritance Patterns
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Inherit and Specialize Arcs: Advanced Inheritance Patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#inherit-arcs-broadcast-inheritance" class="md-nav__link">
+    <span class="md-ellipsis">
+      Inherit Arcs: Broadcast Inheritance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-to-use-inherit-arcs" class="md-nav__link">
+    <span class="md-ellipsis">
+      When to Use Inherit Arcs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#class-specifier" class="md-nav__link">
+    <span class="md-ellipsis">
+      Class Specifier
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#specialize-arcs-fallback-inheritance" class="md-nav__link">
+    <span class="md-ellipsis">
+      Specialize Arcs: Fallback Inheritance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-to-use-specialize-arcs" class="md-nav__link">
+    <span class="md-ellipsis">
+      When to Use Specialize Arcs
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#livrps-strength-ordering-composition-resolution-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      LIVRPS Strength Ordering: Composition Resolution Rules
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="LIVRPS Strength Ordering: Composition Resolution Rules">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#understanding-livrps" class="md-nav__link">
+    <span class="md-ellipsis">
+      Understanding LIVRPS
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#layer-stack-foundation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Layer Stack Foundation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#livrps-breakdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      LIVRPS Breakdown
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#composition-order-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      Composition Order Rules
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recursive-application" class="md-nav__link">
+    <span class="md-ellipsis">
+      Recursive Application
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#course2-learn-openusd-asset-structure-principles-and-content-aggregation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Course2: Learn OpenUSD: Asset Structure Principles and Content Aggregation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#course3-learn-openusd-developing-data-exchange-pipelines" class="md-nav__link">
+    <span class="md-ellipsis">
+      Course3: Learn OpenUSD: Developing Data Exchange Pipelines
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Omniverse Platform
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Omniverse Platform
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../omniverse_kit/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Omniverse Kit
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../kit_app_streaming/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Kit App Streaming
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Simulation & Robotics
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Simulation & Robotics
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../isaac_sim/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Isaac Sim
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ros2_integration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    ROS 2 Integration
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hil_sim/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    HIL Simulation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#course-1-learn-openusd-creating-composition-arcs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Course 1: Learn OpenUSD: Creating Composition Arcs
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setup-and-installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Setup and Installation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Setup and Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#installing-usdview" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing usdview
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Installing usdview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#download-and-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Download and Setup
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#linux-prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      Linux Prerequisites
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-usdview" class="md-nav__link">
+    <span class="md-ellipsis">
+      Running usdview
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adding-to-path-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adding to PATH (Optional)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setting-up-openusd-python-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      Setting Up OpenUSD Python Environment
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Setting Up OpenUSD Python Environment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#creating-virtual-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      Creating Virtual Environment
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#activating-the-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      Activating the Environment
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alternative-setup-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      Alternative Setup Method
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#installing-required-packages" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing Required Packages
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Installing Required Packages">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usd-core-library" class="md-nav__link">
+    <span class="md-ellipsis">
+      USD Core Library
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#additional-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      Additional Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#course-materials" class="md-nav__link">
+    <span class="md-ellipsis">
+      Course Materials
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#additional-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      Additional Resources
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-usd-concepts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core USD Concepts
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core USD Concepts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prims-the-foundation-of-usd" class="md-nav__link">
+    <span class="md-ellipsis">
+      Prims: The Foundation of USD
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Prims: The Foundation of USD">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#understanding-specs-and-opinions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Understanding Specs and Opinions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Property Types
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#working-with-specs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Working with Specs
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#layers-collaborative-scene-composition" class="md-nav__link">
+    <span class="md-ellipsis">
+      Layers: Collaborative Scene Composition
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Layers: Collaborative Scene Composition">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-are-layers" class="md-nav__link">
+    <span class="md-ellipsis">
+      What are Layers?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#collaborative-workflow-benefits" class="md-nav__link">
+    <span class="md-ellipsis">
+      Collaborative Workflow Benefits
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#layer-applications" class="md-nav__link">
+    <span class="md-ellipsis">
+      Layer Applications
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sublayers-strength-ordered-composition" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sublayers: Strength-Ordered Composition
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sublayers: Strength-Ordered Composition">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#when-to-use-sublayers" class="md-nav__link">
+    <span class="md-ellipsis">
+      When to Use Sublayers
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#practical-exercise" class="md-nav__link">
+    <span class="md-ellipsis">
+      Practical Exercise
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical Exercise">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#understanding-over-prims" class="md-nav__link">
+    <span class="md-ellipsis">
+      Understanding "Over" Prims
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-composition-arcs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Composition Arcs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#references-and-payloads-asset-reuse-and-performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      References and Payloads: Asset Reuse and Performance
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="References and Payloads: Asset Reuse and Performance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#references-modular-asset-composition" class="md-nav__link">
+    <span class="md-ellipsis">
+      References: Modular Asset Composition
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#payloads-on-demand-loading" class="md-nav__link">
+    <span class="md-ellipsis">
+      Payloads: On-Demand Loading
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#encapsulation-asset-self-containment" class="md-nav__link">
+    <span class="md-ellipsis">
+      Encapsulation: Asset Self-Containment
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Encapsulation: Asset Self-Containment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#understanding-encapsulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Understanding Encapsulation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#encapsulation-vs-unencapsulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Encapsulation vs. Unencapsulation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      Best Practices
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#practical-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Practical Example
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#default-prims" class="md-nav__link">
+    <span class="md-ellipsis">
+      Default Prims
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variant-sets-runtime-asset-variations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Variant Sets: Runtime Asset Variations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Variant Sets: Runtime Asset Variations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-are-variant-sets" class="md-nav__link">
+    <span class="md-ellipsis">
+      What are Variant Sets?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-use-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Use Cases
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-variant-sets-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      How Variant Sets Work
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variant-capabilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      Variant Capabilities
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#best-practices_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Best Practices
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#practical-example_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Practical Example
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inherit-and-specialize-arcs-advanced-inheritance-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      Inherit and Specialize Arcs: Advanced Inheritance Patterns
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Inherit and Specialize Arcs: Advanced Inheritance Patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#inherit-arcs-broadcast-inheritance" class="md-nav__link">
+    <span class="md-ellipsis">
+      Inherit Arcs: Broadcast Inheritance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-to-use-inherit-arcs" class="md-nav__link">
+    <span class="md-ellipsis">
+      When to Use Inherit Arcs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#class-specifier" class="md-nav__link">
+    <span class="md-ellipsis">
+      Class Specifier
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#specialize-arcs-fallback-inheritance" class="md-nav__link">
+    <span class="md-ellipsis">
+      Specialize Arcs: Fallback Inheritance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-to-use-specialize-arcs" class="md-nav__link">
+    <span class="md-ellipsis">
+      When to Use Specialize Arcs
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#livrps-strength-ordering-composition-resolution-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      LIVRPS Strength Ordering: Composition Resolution Rules
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="LIVRPS Strength Ordering: Composition Resolution Rules">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#understanding-livrps" class="md-nav__link">
+    <span class="md-ellipsis">
+      Understanding LIVRPS
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#layer-stack-foundation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Layer Stack Foundation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#livrps-breakdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      LIVRPS Breakdown
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#composition-order-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      Composition Order Rules
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recursive-application" class="md-nav__link">
+    <span class="md-ellipsis">
+      Recursive Application
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#course2-learn-openusd-asset-structure-principles-and-content-aggregation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Course2: Learn OpenUSD: Asset Structure Principles and Content Aggregation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#course3-learn-openusd-developing-data-exchange-pipelines" class="md-nav__link">
+    <span class="md-ellipsis">
+      Course3: Learn OpenUSD: Developing Data Exchange Pipelines
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="openusd-applied-concepts">OpenUSD Applied Concepts</h1>
+<p>Build on foundational knowledge to explore advanced topics in OpenUSD, preparing developers and practitioners to use Universal Scene Description effectively in practical workflows.</p>
+<h2 id="course-1-learn-openusd-creating-composition-arcs">Course 1: Learn OpenUSD: Creating Composition Arcs</h2>
+<p>This course covers advanced USD composition techniques and practical implementation strategies:</p>
+<ul>
+<li><strong>Layers and Sublayers</strong>: Organize and structure USD scene data effectively</li>
+<li><strong>References and Payloads</strong>: Build modular and efficient USD scenes</li>
+<li><strong>Encapsulation Techniques</strong>: Apply proper data organization methods</li>
+<li><strong>Variant Sets</strong>: Create flexible asset variations within USD scenes</li>
+<li><strong>Inherits and Specializes</strong>: Create hierarchical relationships and optimize scene composition</li>
+<li><strong>LIVRPS Strength Ordering</strong>: Predict and control USD composition results</li>
+<li><strong>Debugging</strong>: Troubleshoot complex USD compositions using usdview and Python</li>
+</ul>
+<h2 id="setup-and-installation">Setup and Installation</h2>
+<h3 id="installing-usdview">Installing usdview</h3>
+<p><strong>Documentation</strong>: <a href="https://docs.omniverse.nvidia.com/usd/latest/usdview/quickstart.html">usdview Quickstart Guide</a></p>
+<p><strong>usdview</strong> is compatible with Linux, macOS, and Windows. These instructions are primarily for Windows and Linux users. macOS users can run usdview but must build it from the <a href="https://github.com/PixarAnimationStudios/OpenUSD">OpenUSD repository</a>.</p>
+<h4 id="download-and-setup">Download and Setup</h4>
+<ol>
+<li>Visit <a href="https://developer.nvidia.com/usd">NVIDIA's OpenUSD developer resources page</a></li>
+<li>Download <strong>Pre-Built OpenUSD Libraries and Tools</strong> (USD 25.05, Python 3.11)</li>
+<li>Extract the downloaded archive (this may take several minutes)</li>
+<li>Rename the extracted folder to <code>usd_root</code></li>
+</ol>
+<h4 id="linux-prerequisites">Linux Prerequisites</h4>
+<p>For Ubuntu systems, install the required X11 dependencies before proceeding:</p>
+<pre><code class="language-bash">sudo apt-get install libxkbcommon-x11-0 libxcb-xinerama0 libxcb-image0 \
+                    libxcb-shape0 libxcb-render-util0 libxcb-icccm4 \
+                    libxcb-keysyms1
+</code></pre>
+<blockquote>
+<p><strong>Note</strong>: Tested on Ubuntu 22.04 LTS and 24.04 LTS. Adjust the command for other Linux distributions as needed.</p>
+</blockquote>
+<h4 id="running-usdview">Running usdview</h4>
+<p>Navigate to the <code>usd_root/</code> folder in your terminal and run:</p>
+<p><strong>Windows:</strong></p>
+<pre><code class="language-cmd">.\scripts\usdview_gui.bat
+</code></pre>
+<p><strong>Linux/macOS:</strong></p>
+<pre><code class="language-bash">./scripts/usdview_gui.sh
+</code></pre>
+<p>This opens usdview with the HelloWorld.usda file. The <code>usdview_gui</code> script doesn't require a USD file argument, while <code>usdview</code> requires a specific USD file path.</p>
+<h4 id="adding-to-path-optional">Adding to PATH (Optional)</h4>
+<p>For convenient access, add the <code>scripts/</code> folder to your PATH environment variable:</p>
+<p><strong>Windows:</strong>
+1. Open Start menu → Type "SystemPropertiesAdvanced" → Press Enter
+2. Click "Environment Variables..."
+3. Double-click the "Path" row in User variables
+4. Click "New" and add the full path to your <code>scripts/</code> folder
+5. Test with: <code>usdview_gui.bat</code></p>
+<p><strong>Linux/macOS:</strong></p>
+<pre><code class="language-bash">export PATH=&lt;PRE-BUILT BINARIES DIR&gt;/scripts:$PATH
+# Test with:
+usdview_gui.sh
+</code></pre>
+<h3 id="setting-up-openusd-python-environment">Setting Up OpenUSD Python Environment</h3>
+<p>The prebuilt OpenUSD binaries include a compatible Python version located in the <code>python/</code> folder.</p>
+<h4 id="creating-virtual-environment">Creating Virtual Environment</h4>
+<p>Create a virtual Python environment in the <code>usd_root/</code> directory:</p>
+<p><strong>Windows:</strong></p>
+<pre><code class="language-cmd">.\python\python.exe -m venv .\pyusd-venv
+</code></pre>
+<p><strong>Linux/macOS:</strong></p>
+<pre><code class="language-bash">./python/python -m venv ./pyusd-venv
+</code></pre>
+<h4 id="activating-the-environment">Activating the Environment</h4>
+<p><strong>bash/zsh:</strong></p>
+<pre><code class="language-bash">source pyusd-venv/bin/activate
+</code></pre>
+<p>&lt;!-- <strong>Windows Command Prompt:</strong></p>
+<pre><code class="language-cmd">pyusd-venv\Scripts\activate.bat
+``` --&gt;
+
+**Windows PowerShell:**
+```powershell
+(base) PS D:\IsaacSim\usd_root&gt; pyusd-venv\Scripts\Activate.ps1
+(pyusd-venv) (base) PS D:\IsaacSim\usd_root&gt; 
+</code></pre>
+<blockquote>
+<p><strong>PowerShell Note</strong>: You may need to set the execution policy first:
+<code>powershell
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser</code></p>
+</blockquote>
+<h4 id="alternative-setup-method">Alternative Setup Method</h4>
+<p>You can also use the provided environment scripts:</p>
+<p><strong>Windows:</strong></p>
+<pre><code class="language-cmd">set_usd_env.bat
+</code></pre>
+<p><strong>Linux/macOS:</strong></p>
+<pre><code class="language-bash">source set_usd_env.sh
+</code></pre>
+<h3 id="installing-required-packages">Installing Required Packages</h3>
+<h4 id="usd-core-library">USD Core Library</h4>
+<p>Install <strong>usd-core</strong>, which provides access to the USD API:</p>
+<pre><code class="language-bash">(pyusd-venv) (base) PS D:\IsaacSim\usd_root&gt; python -V
+Python 3.11.11
+(pyusd-venv) (base) PS D:\IsaacSim\usd_root&gt; pip list            
+Package    Version
+---------- -------
+pip        24.3.1
+setuptools 70.3.0
+(pyusd-venv) (base) PS D:\IsaacSim\usd_root&gt; pip install usd-core
+</code></pre>
+<p><strong>Verify installation:</strong></p>
+<pre><code class="language-bash">(pyusd-venv) (base) PS D:\IsaacSim\usd_root&gt; python -c &quot;from pxr import Usd; print(Usd.GetVersion())&quot;
+(0, 25, 8)
+</code></pre>
+<h4 id="additional-dependencies">Additional Dependencies</h4>
+<p><strong>Install Assimp for 3D model processing:</strong></p>
+<pre><code class="language-bash">pip install assimp-py
+</code></pre>
+<p><strong>Verify Assimp installation:</strong></p>
+<pre><code class="language-bash">python -c &quot;import assimp_py&quot;
+</code></pre>
+<h3 id="course-materials">Course Materials</h3>
+<p>This course includes hands-on activities. Download the required files:</p>
+<p>📁 <strong><a href="https://learn.learn.nvidia.com/assets/courseware/v1/cf960309f12f0890cce592bbaf41c1d9/asset-v1:DLI+S-OV-25+V1+type@asset+block/composition-arcs-course-files.zip">Course Files Download</a></strong></p>
+<p><strong>Setup Instructions:</strong>
+1. Extract the downloaded archive
+2. Copy the <code>composition_arcs</code> folder to your <code>usd_root/</code> directory
+3. You can drag and drop it into Visual Studio Code's Explorer panel</p>
+<h3 id="additional-resources">Additional Resources</h3>
+<p>Access sample USD content and assets:</p>
+<p>🎨 <strong><a href="https://docs.omniverse.nvidia.com/usd/latest/usd_content_samples/downloadable_packs.html">USD Content Samples</a></strong></p>
+<hr />
+<h2 id="core-usd-concepts">Core USD Concepts</h2>
+<h3 id="prims-the-foundation-of-usd">Prims: The Foundation of USD</h3>
+<p>A <strong>prim</strong> (primitive) is the primary container object in USD that can:
+- Contain and organize other prims in a hierarchy
+- Hold various types of data (geometry, materials, transforms, etc.)
+- Be composed from multiple <strong>primSpecs</strong> and <strong>propertySpecs</strong></p>
+<h4 id="understanding-specs-and-opinions">Understanding Specs and Opinions</h4>
+<p><strong>Specs</strong> are the building blocks of USD composition:
+- <strong>primSpecs</strong>: Define prim-level data and metadata
+- <strong>propertySpecs</strong>: Define attribute and relationship data
+- <strong>Opinions</strong>: The actual authored values stored in specs within layers</p>
+<p><img alt="Prime Composition" src="../imgs/Prime.png" /></p>
+<h4 id="property-types">Property Types</h4>
+<p>Properties in USD come in two main forms:
+- <strong>Attributes</strong>: Store data values (positions, colors, etc.)
+- <strong>Relationships</strong>: Define connections between prims</p>
+<p>This means propertySpecs include both <strong>attributeSpecs</strong> and <strong>relationshipSpecs</strong>.</p>
+<h4 id="working-with-specs">Working with Specs</h4>
+<p>Interact with specs using the <strong>Sdf (Scene Description Foundations) API</strong>:
+- <code>SdfSpec</code>: Base API for all specs
+- <code>SdfPrimSpec</code>: API for prim specifications
+- <code>SdfPropertySpec</code>: API for property specifications</p>
+<blockquote>
+<p><strong>Example</strong>: In the image above, <code>Sphere</code> is a primSpec, <code>radius</code> is a propertySpec, and <code>1.0</code> is the opinion value.</p>
+</blockquote>
+<h3 id="layers-collaborative-scene-composition">Layers: Collaborative Scene Composition</h3>
+<p><img alt="Layers" src="../imgs/layer.png" /></p>
+<h4 id="what-are-layers">What are Layers?</h4>
+<p>A <strong>layer</strong> is a single USD document (file or hosted resource) that contains:
+- Prims and properties defined as <strong>primSpecs</strong> and <strong>propertySpecs</strong>
+- Sparse definitions that contribute to the final composed scene
+- Independent data that can be authored by different <strong>workstreams</strong></p>
+<h4 id="collaborative-workflow-benefits">Collaborative Workflow Benefits</h4>
+<p><strong>Workstreams</strong> are different data producers in a project:
+- Teams, users, departments
+- Services, applications, tools
+- Each authors data to separate layers independently</p>
+<p>This enables USD's core strength: <strong>collaborative, non-destructive editing</strong>.</p>
+<h4 id="layer-applications">Layer Applications</h4>
+<p>Layers are essential for:
+- <strong>Organization</strong>: Structure content logically
+- <strong>Optimization</strong>: Enable deferred loading (Payloads)
+- <strong>Instancing</strong>: Efficient scene reuse
+- <strong>Collaboration</strong>: Parallel development workflows</p>
+<h3 id="sublayers-strength-ordered-composition">Sublayers: Strength-Ordered Composition</h3>
+<p><strong>Sublayers</strong> are ordered lists of USD layers where:
+- <strong>First layer = Strongest opinions</strong>
+- <strong>Last layer = Weakest opinions</strong>
+- Each layer overlays on others, providing additional opinions
+- Contents are included without remapping</p>
+<h4 id="when-to-use-sublayers">When to Use Sublayers</h4>
+<p>Sublayers excel in large scene workflows:</p>
+<p><strong>Example Scenario:</strong>
+- <strong>Lighting team</strong> → Works in <code>lighting.usd</code>
+- <strong>Layout team</strong> → Works in <code>layout.usd</code>
+- <strong>Animation team</strong> → Works in <code>animation.usd</code></p>
+<p><strong>Benefits:</strong>
+- ✅ Independent, parallel development
+- ✅ No blocking between teams
+- ✅ Automatic integration of changes
+- ✅ Manageable, smaller files</p>
+<p><img alt="Layers" src="../imgs/layer2.png" /></p>
+<h3 id="practical-exercise">Practical Exercise</h3>
+<p>Explore the composition examples:</p>
+<pre><code>composition_arcs/sublayers/simple_example/
+├── sublayerA.usd
+├── sublayerB.usd
+└── sublayers_simple.usd
+</code></pre>
+<h4 id="understanding-over-prims">Understanding "Over" Prims</h4>
+<p><strong>Over</strong> (short for "override" or "compose over"):
+- Provides neutral containers for overriding opinions
+- Doesn't change the resolved specifier when stronger than <code>def</code> or <code>class</code>
+- Used for authoring overriding opinions on existing prims</p>
+<p><strong>Example</strong>: In <code>sublayerB.usda</code>, an <code>over</code> prim provides overriding opinions for the <code>Geometry</code> prim, defining a <code>Sphere</code> within it.</p>
+<h3 id="advanced-composition-arcs">Advanced Composition Arcs</h3>
+<h3 id="references-and-payloads-asset-reuse-and-performance">References and Payloads: Asset Reuse and Performance</h3>
+<p><strong>References</strong> and <strong>payloads</strong> are essential composition arcs for managing complex scenes, reusing assets, and optimizing performance in USD workflows.</p>
+<h4 id="references-modular-asset-composition">References: Modular Asset Composition</h4>
+<p><strong>What are References?</strong></p>
+<p>References enable you to create multiple copies of the same content by grafting a prim hierarchy from one layer onto a prim in another layer. This makes them ideal for:
+- <strong>Modularity</strong>: Compose smaller asset units into larger aggregates
+- <strong>Reusability</strong>: Use the same assets across different scenes
+- <strong>Collaboration</strong>: Enable parallel development by multiple contributors</p>
+<p><strong>Key Characteristics:</strong>
+- <strong>Path Translation</strong>: Referenced prims undergo name changes and path translations to fit their new namespace
+- <strong>External/Internal</strong>: Can target prims from different layers (external) or within the same layer (internal)
+- <strong>Always Loaded</strong>: References are always composed and present on the stage</p>
+<p><strong>Use Case Example:</strong>
+A digital twin of a factory environment can consist of various assets from disparate sources:
+- Boxes, machinery, conveyor belts, shelving
+- Each asset referenced multiple times to build the complete factory
+- Reduces duplication while enabling modular assembly</p>
+<p><strong>Viewing References in usdview:</strong></p>
+<p><strong>Windows:</strong></p>
+<pre><code class="language-cmd">.\scripts\usdview.bat .\composition_arcs\references\simple_example\red_cube.usd
+</code></pre>
+<p><strong>Linux:</strong></p>
+<pre><code class="language-bash">./scripts/usdview.sh ./composition_arcs/references/simple_example/red_cube.usd
+</code></pre>
+<h4 id="payloads-on-demand-loading">Payloads: On-Demand Loading</h4>
+<p><img alt="Payload" src="../imgs/payloads.png" /></p>
+<p><strong>What are Payloads?</strong></p>
+<p>Payloads are similar to references but with the crucial ability to <strong>load and unload content on demand</strong>. This enables efficient memory management and faster scene navigation.</p>
+<p><strong>Key Benefits:</strong>
+- <strong>Deferred Loading</strong>: Load only the assets you need to inspect
+- <strong>Memory Efficiency</strong>: Reduce memory usage by unloading unnecessary content
+- <strong>Performance</strong>: Faster scene loading and improved interactivity
+- <strong>Selective Composition</strong>: Load specific payloads while keeping others unloaded</p>
+<p><strong>Workflow Example:</strong>
+1. <strong>Load Stage</strong>: Open a city scene with all payloads unloaded (fast loading)
+2. <strong>Navigate</strong>: Browse the scene hierarchy to find areas of interest
+3. <strong>Selective Loading</strong>: Load only the city block or assets you want to inspect
+4. <strong>Compose</strong>: Data from loaded payloads and their dependencies gets composed into the scene</p>
+<p><strong>Composition Characteristics:</strong>
+- <strong>List-Editable</strong>: Can be applied to the same prim in lists, like references
+- <strong>Weaker Strength</strong>: Lower priority than references in LIVRPS ordering
+- <strong>Recursive Unloading</strong>: Unloading a payload also unloads all its descendants</p>
+<p><strong>Testing Payloads in usdview:</strong></p>
+<pre><code class="language-bash">.\scripts\usdview.bat .\composition_arcs\payloads\simple_example\red_cube.usd
+</code></pre>
+<p><strong>Key Observation</strong>: When selecting "Unload" in usdview, all descendants disappear from the tree view, demonstrating payload's ability to completely remove scene description from composition.</p>
+<hr />
+<h3 id="encapsulation-asset-self-containment">Encapsulation: Asset Self-Containment</h3>
+<p><strong>Encapsulation</strong> refers to organizing assets in a self-contained manner, ensuring all dependencies are included when referencing or composing assets.</p>
+<h4 id="understanding-encapsulation">Understanding Encapsulation</h4>
+<p><strong>What is Encapsulation?</strong>
+- A prim is <strong>encapsulated</strong> when it is an ancestor of the referenced target prim
+- When encapsulated, the prim will be referenced along with its ancestor
+- Promotes <strong>modularity</strong> and <strong>reusability</strong> across projects</p>
+<h4 id="encapsulation-vs-unencapsulation">Encapsulation vs. Unencapsulation</h4>
+<p><strong>Unencapsulated Assets:</strong>
+- Missing dependencies when referenced
+- Can break material bindings and relationships
+- Example: Referencing <code>unencapsulated.usd</code> brings the cube but loses the red material binding</p>
+<p><strong>Properly Encapsulated Assets:</strong>
+- Include all necessary dependencies within the asset hierarchy
+- Maintain material bindings and relationships when referenced
+- Self-contained and portable across different contexts</p>
+<h4 id="best-practices">Best Practices</h4>
+<p><strong>Proper Encapsulation Techniques:</strong>
+- <strong>Hierarchical Organization</strong>: Organize prims within a root prim container
+- <strong>Default Prims</strong>: Use default prims as main entry points for assets
+- <strong>Dependency Inclusion</strong>: Ensure all materials, textures, and relationships are included
+- <strong>Self-Containment</strong>: Assets should work independently when referenced</p>
+<h4 id="practical-example">Practical Example</h4>
+<p><strong>Good Encapsulation Example:</strong></p>
+<pre><code class="language-bash">.\scripts\usdview.bat .\composition_arcs\references\encapsulation_example\encapsulated_GOOD.usd
+</code></pre>
+<p><strong>Key Benefits:</strong>
+- ✅ <strong>Modularity</strong>: Assets work across different projects
+- ✅ <strong>Reliability</strong>: No broken dependencies when referencing
+- ✅ <strong>Maintainability</strong>: Easier to manage and update assets
+- ✅ <strong>Collaboration</strong>: Teams can work with assets independently</p>
+<h4 id="default-prims">Default Prims</h4>
+<p><strong>Default prims</strong> serve as the main entry point for assets:
+- Automatically selected when referencing or payloading
+- Simplify asset usage and composition
+- Enable consistent asset behavior across different contexts</p>
+<hr />
+<h3 id="variant-sets-runtime-asset-variations">Variant Sets: Runtime Asset Variations</h3>
+<p><strong>Variant Sets</strong> enable you to define multiple variations or alternative representations of the same asset that can be switched at runtime, providing flexible content management without duplicating assets.</p>
+<h4 id="what-are-variant-sets">What are Variant Sets?</h4>
+<p><strong>Core Concept:</strong>
+- Define <strong>variations</strong> (called "variants") of the same dataset
+- Switch between variations at runtime
+- Only the <strong>selected variant</strong> is composed on the stage
+- All other variants are ignored during traversal</p>
+<h4 id="common-use-cases">Common Use Cases</h4>
+<p><strong>Character Outfits Example:</strong>
+- Single character asset with multiple clothing options
+- Variant set controls which outfit appears in each shot
+- Eliminates need to manage separate character + clothing combinations
+- Reduces complexity and asset management overhead</p>
+<p><strong>Other Applications:</strong>
+- <strong>Level of Detail (LOD)</strong>: High/medium/low resolution variants
+- <strong>Material Variations</strong>: Different surface treatments for the same geometry
+- <strong>Seasonal Changes</strong>: Summer/winter versions of environments
+- <strong>Configuration Options</strong>: Different equipment or accessory combinations</p>
+<h4 id="how-variant-sets-work">How Variant Sets Work</h4>
+<p><strong>Variant Set Structure:</strong>
+- <strong>Variant Set</strong>: Controller that manages variations
+- <strong>Variants</strong>: Individual variation options within the set
+- <strong>Selection</strong>: Only one variant active at a time
+- <strong>Scope</strong>: Can manipulate the prim and any descendant prims</p>
+<h4 id="variant-capabilities">Variant Capabilities</h4>
+<p><strong>What Variants Can Do:</strong>
+- <strong>Override Properties</strong>: Sparsely modify attributes on any descendant prim
+- <strong>Add Geometry</strong>: Include additional prims or components
+- <strong>Material Changes</strong>: Switch materials, textures, or shading
+- <strong>Transform Modifications</strong>: Adjust positions, rotations, or scales</p>
+<p><img alt="Variant Sets" src="../imgs/variants.png" /></p>
+<p><strong>Example</strong>: Two variants override the diffuse color of a cube material:
+- <strong>Blue Variant</strong>: Sets material color to blue
+- <strong>Green Variant</strong>: Sets material color to green</p>
+<h4 id="best-practices_1">Best Practices</h4>
+<p><strong>Variant Set Design Guidelines:</strong>
+- <strong>Limited Scope</strong>: Keep variant changes predictable and focused
+- <strong>Clear Naming</strong>: Use descriptive names for variant sets and variants
+- <strong>Consistent Structure</strong>: Maintain similar prim hierarchies across variants
+- <strong>Performance Consideration</strong>: Avoid overly complex variant combinations</p>
+<h4 id="practical-example_1">Practical Example</h4>
+<p><strong>Testing Variant Sets:</strong></p>
+<pre><code class="language-bash">.\scripts\usdview.bat .\composition_arcs\variant_sets\simple_example\variant_sets_simple.usd
+</code></pre>
+<p><strong>In usdview:</strong>
+1. Select different variants from the variant set dropdown
+2. Observe how the scene changes based on the selected variant
+3. Note that only one variant is active at any time</p>
+<hr />
+<h3 id="inherit-and-specialize-arcs-advanced-inheritance-patterns">Inherit and Specialize Arcs: Advanced Inheritance Patterns</h3>
+<h4 id="inherit-arcs-broadcast-inheritance">Inherit Arcs: Broadcast Inheritance</h4>
+<p><strong>What are Inherit Arcs?</strong></p>
+<p>Inherit arcs share similarities with programming inheritance, enabling prims to inherit properties and structure from other prims with <strong>broadcast capabilities</strong> across layer stacks.</p>
+<p><strong>Key Characteristics:</strong>
+- <strong>Source Prim</strong>: The prim being inherited from (often uses "class" specifier)
+- <strong>Destination Prim</strong>: The prim that inherits properties
+- <strong>Broadcast Updates</strong>: Changes to source prim propagate to all inheriting prims
+- <strong>Cross-Layer Stack</strong>: Works across references and different layer stacks</p>
+<p><strong>Example</strong>: <code>/World</code> prim inherits from <code>/_cube_asset</code>, applying all properties and descendants from the source hierarchy.</p>
+<h4 id="when-to-use-inherit-arcs">When to Use Inherit Arcs</h4>
+<p><strong>Ideal Use Cases:</strong>
+- <strong>Reusable Assets</strong>: Define assets meant to be inherited by multiple prims
+- <strong>Global Updates</strong>: Apply changes to all instances of an asset simultaneously
+- <strong>Unencapsulated Sources</strong>: Use with unencapsulated inherit source prims for maximum flexibility
+- <strong>Asset Libraries</strong>: Create base assets that can be customized per instance</p>
+<p><strong>Workflow Benefits:</strong>
+1. <strong>Global Namespace</strong>: Source prim becomes editable at any stronger layer
+2. <strong>Broadcast Changes</strong>: Modifications propagate to all inheriting prims automatically
+3. <strong>Individual Overrides</strong>: Specific instances can still be customized in stronger layers
+4. <strong>Cross-Reference</strong>: Works across different layer stacks and references</p>
+<h4 id="class-specifier">Class Specifier</h4>
+<p><strong>Why Use "class" Specifier?</strong></p>
+<p>When authoring prims meant for inheritance, use the <strong>"class" specifier</strong>:</p>
+<p><strong>Benefits:</strong>
+- <strong>Communication</strong>: Clearly indicates the prim is designed for inheritance
+- <strong>Rendering Behavior</strong>: Hydra doesn't render "class" prims or their descendants
+- <strong>Abstract Data</strong>: Perfect for purely abstract/template data
+- <strong>Performance</strong>: Avoids unnecessary rendering of template prims</p>
+<hr />
+<h4 id="specialize-arcs-fallback-inheritance">Specialize Arcs: Fallback Inheritance</h4>
+<p><strong>What are Specialize Arcs?</strong></p>
+<p>Specialize arcs provide <strong>fallback-based inheritance</strong>, similar to traditional object-oriented programming inheritance patterns.</p>
+<p><strong>Key Differences from Inherit:</strong>
+- <strong>Fallback Values</strong>: Specs are applied only when no stronger opinion exists
+- <strong>OOP-Style</strong>: Behaves like traditional class inheritance
+- <strong>Conditional Application</strong>: Only applies if destination prim lacks the specific spec
+- <strong>Weaker Strength</strong>: Lowest priority in LIVRPS ordering</p>
+<h4 id="when-to-use-specialize-arcs">When to Use Specialize Arcs</h4>
+<p><strong>Traditional OOP Inheritance:</strong>
+- <strong>Default Values</strong>: Provide fallback values for properties
+- <strong>Class-like Behavior</strong>: Objects inherit from classes but can override members
+- <strong>Conditional Updates</strong>: Changes to "class" only affect objects still using default values
+- <strong>Selective Inheritance</strong>: Objects with overrides ignore class updates</p>
+<p><strong>Behavior Comparison:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Inherit Arcs</th>
+<th>Specialize Arcs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Update Propagation</strong></td>
+<td>Always broadcasts</td>
+<td>Only to non-overridden specs</td>
+</tr>
+<tr>
+<td><strong>Override Behavior</strong></td>
+<td>Can be overridden in stronger layers</td>
+<td>Overrides ignore source updates</td>
+</tr>
+<tr>
+<td><strong>Use Case</strong></td>
+<td>Global asset updates</td>
+<td>Traditional OOP inheritance</td>
+</tr>
+<tr>
+<td><strong>Strength</strong></td>
+<td>Stronger ("I" in LIVRPS)</td>
+<td>Weakest ("S" in LIVRPS)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="livrps-strength-ordering-composition-resolution-rules">LIVRPS Strength Ordering: Composition Resolution Rules</h3>
+<h4 id="understanding-livrps">Understanding LIVRPS</h4>
+<p><strong>What is LIVRPS?</strong></p>
+<p>LIVRPS is a fundamental concept in USD that governs how different composition arcs are applied when creating a scene. This acronym captures all operations used to compose data from layers onto the stage, <strong>in the order of their strength</strong>.</p>
+<p><strong>Why Strength Ordering Matters:</strong>
+- <strong>Multiple Opinions</strong>: USD allows multiple layers and composition operations to define the same property
+- <strong>Conflict Resolution</strong>: Strength ordering determines which opinion "wins" in the final composed stage
+- <strong>Predictable Results</strong>: Ensures consistent and predictable composition behavior
+- <strong>Hierarchical Control</strong>: Stronger operations can override weaker ones</p>
+<h4 id="layer-stack-foundation">Layer Stack Foundation</h4>
+<p><strong>What is a Layer Stack?</strong></p>
+<p><img alt="Layer Stack" src="layerstack.png" /></p>
+<p>A <strong>layer stack</strong> is the ordered set of layers resulting from:
+1. <strong>Root Layer</strong>: The primary layer (strongest)
+2. <strong>Sublayers</strong>: All recursively gathered sublayers
+3. <strong>Local Composition</strong>: Internal references, payloads, variant sets, inherits, and specializes</p>
+<p><strong>Key Characteristics:</strong>
+- <strong>Strength-Ordered</strong>: First layer is strongest, subsequent layers are progressively weaker
+- <strong>Recursive Gathering</strong>: Includes all nested sublayers automatically
+- <strong>Composition Context</strong>: Each layer stack forms a complete composition context
+- <strong>Cross-Stack Operations</strong>: Multiple layer stacks are composed using references and payloads</p>
+<h4 id="livrps-breakdown">LIVRPS Breakdown</h4>
+<p>The LIVRPS acronym represents both the <strong>composition operations</strong> and their <strong>application order</strong> (strongest to weakest):</p>
+<table>
+<thead>
+<tr>
+<th>Letter</th>
+<th>Operation</th>
+<th>Strength</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>L</strong></td>
+<td><strong>Local</strong></td>
+<td>Strongest</td>
+<td>Direct opinions in current layer stack</td>
+</tr>
+<tr>
+<td><strong>I</strong></td>
+<td><strong>Inherit</strong></td>
+<td>Strong</td>
+<td>Broadcast inheritance from source prims</td>
+</tr>
+<tr>
+<td><strong>V</strong></td>
+<td><strong>Variant</strong></td>
+<td>Medium-Strong</td>
+<td>Runtime asset variations</td>
+</tr>
+<tr>
+<td><strong>R</strong></td>
+<td><strong>Reference</strong></td>
+<td>Medium</td>
+<td>Modular asset composition</td>
+</tr>
+<tr>
+<td><strong>P</strong></td>
+<td><strong>Payload</strong></td>
+<td>Medium-Weak</td>
+<td>On-demand loading composition</td>
+</tr>
+<tr>
+<td><strong>S</strong></td>
+<td><strong>Specialize</strong></td>
+<td>Weakest</td>
+<td>Fallback inheritance patterns</td>
+</tr>
+</tbody>
+</table>
+<h4 id="composition-order-rules">Composition Order Rules</h4>
+<p><strong>Within Each Layer Stack:</strong></p>
+<ol>
+<li><strong>Local Opinions</strong> (L) - Strongest</li>
+<li>Direct property values authored in the current layer</li>
+<li>Immediate overrides and customizations</li>
+<li>
+<p>Always take precedence over composition arcs</p>
+</li>
+<li>
+<p><strong>Inherit Arcs</strong> (I)</p>
+</li>
+<li>Broadcast inheritance from source prims</li>
+<li>Global updates propagate to all inheriting prims</li>
+<li>
+<p>Can be overridden by local opinions</p>
+</li>
+<li>
+<p><strong>Variant Set Arcs</strong> (V)</p>
+</li>
+<li>Runtime asset variations and configurations</li>
+<li>Selected variants contribute their opinions</li>
+<li>
+<p>Weaker than inherits but stronger than references</p>
+</li>
+<li>
+<p><strong>Reference Arcs</strong> (R)</p>
+</li>
+<li>Modular asset composition and reuse</li>
+<li>Brings in external asset hierarchies</li>
+<li>
+<p>Can be customized by stronger operations</p>
+</li>
+<li>
+<p><strong>Payload Arcs</strong> (P)</p>
+</li>
+<li>On-demand loading for heavy assets</li>
+<li>Similar to references but with deferred loading</li>
+<li>
+<p>Slightly weaker than references</p>
+</li>
+<li>
+<p><strong>Specialize Arcs</strong> (S) - Weakest</p>
+</li>
+<li>Fallback inheritance patterns</li>
+<li>Only applied when no stronger opinion exists</li>
+<li>Traditional OOP-style inheritance behavior</li>
+</ol>
+<h4 id="recursive-application">Recursive Application</h4>
+<p><strong>LIVRPS in Practice:</strong>
+- <strong>Per Layer Stack</strong>: LIVRPS applies within each individual layer stack
+- <strong>Recursive Composition</strong>: Each referenced/payload layer stack has its own LIVRPS ordering
+- <strong>Nested Resolution</strong>: Composition arcs can contain other composition arcs
+- <strong>Predictable Hierarchy</strong>: Maintains consistent strength ordering at all levels</p>
+<p><strong>Example Scenario:</strong></p>
+<pre><code>Layer Stack A (Main Scene)
+├── Local opinions (strongest)
+├── Inherits from /CharacterClass
+├── Variant: &quot;damaged&quot; selected
+├── References: /assets/character.usd
+└── Specializes: /defaults/character
+
+Layer Stack B (Referenced Asset)
+├── Local opinions in character.usd
+├── Inherits from /BaseCharacter
+└── References: /assets/geometry.usd
+</code></pre>
+<p><strong>Resolution Order:</strong>
+1. Layer Stack A's local opinions
+2. Layer Stack A's inherit opinions
+3. Layer Stack A's variant opinions
+4. Layer Stack B (referenced) - entire LIVRPS hierarchy
+5. Layer Stack A's specialize opinions</p>
+<h2 id="course2-learn-openusd-asset-structure-principles-and-content-aggregation">Course2: Learn OpenUSD: Asset Structure Principles and Content Aggregation</h2>
+<p>Download the required course files: https://learn.learn.nvidia.com/assets/courseware/v1/b80bc8cc0859b518e050eb259ed5664e/asset-v1:DLI+S-OV-33+V1+type@asset+block/asset-structure-course-files.zip</p>
+<p>What is an asset?
+An asset is a named, versioned, and structured container of one or more resources which may include composable OpenUSD layers, textures, volumetric data, and more. You’ll often come across terms like “asset”, “model”, “assembly”, “element”, “component”, “set”, “shot”, “file”, and “package” when discussing the organization of production data, a product, or a digital twin.</p>
+<p>Asset structure facilitates reuse of this persistent data.</p>
+<p>What makes asset structure necessary?
+Asset structure plays an important role in scaling pipelines and ecosystems. Here’s why:</p>
+<p>Content flow. Asset structures help map out the journey of content throughout production, ensuring everything runs smoothly.
+Seamless collaboration. By adopting consistent conventions and patterns, asset structures reduce friction and make it easier for teams to communicate and work together.
+No one-size-fits-all solution. There isn’t a universally best way to structure an OpenUSD asset, as usage and domains vary. A well-designed asset structure promotes scalability by encouraging parallel and modular workflows, minimizing complexity, and striking a balance between openness and resilience to change.</p>
+<p>There are four key principles that contribute toward a scalable asset structure:</p>
+<p>Legibility ensures your asset structure is easy to understand and interpret.
+Modularity allows for flexibility and reusability.
+Performance ensures your asset structure is efficient and optimized.
+Navigability makes it easy for users to find and access the features and properties they need.
+By adhering to these principles, you can create an asset structure that is not only scalable but also efficient and user-friendly. Let’s dive into each principle to understand more.</p>
+<p>A legible asset structure should be easy to understand and help new users get up to speed quickly. </p>
+<p>Each asset designed to be opened as a stage or added to a scene through referencing has a root layer that serves as its foundation. This root layer, known as the asset interface layer, is structured to be the primary means of interacting with the asset.</p>
+<p>A single asset entry point can typically be specified using the root layer’s defaultPrim metadata. OpenUSD’s composition engine will respect this metadata when referencing. Additionally, different domains (such as renderSettingsPrimPath) may introduce other methods for identifying domain-specific entry points.</p>
+<p>To improve navigability, it’s common to partition asset structures. Partitioning a hierarchy can prevent unintentional namespace collisions between collaborators and avoid ambiguous semantics. For example, what does it mean for a Sphere to be parented to a Material?</p>
+<p>Using scope prims is generally the best approach for these organizational primitives, as they don’t have additional semantics like xform does with transform operations.</p>
+<p>Similarly, it may be useful to group actors and environments under partitioning scopes. This not only aids navigability but also allows users to quickly deactivate all actors or environments by deactivating the root scope.</p>
+<p>When organizing your prim hierarchy, also consider the following:</p>
+<p>Naming Conventions: A legible prim hierarchy should promote consistency for better readability.
+Access Semantics: There are no restrictions on the fields that can be overridden on a prim, so it’s important for collaborators to establish conventions for stable editing. This could include using single or double underscores to discourage users from authoring overrides or to indicate internal use.
+Embedded Context: Embed context directly into assets to hint to users that these assets are intended to be included by reference.</p>
+<p>Products developed by organizations rarely consist of a single file. Instead, work is organized into logical, maintainable units. Similarly, assets should model workstreams into layers.</p>
+<p>User Workstreams: Simple assets can be represented by a single layer, and it may make sense to start there for the sake of simplicity.</p>
+<p>However, when different tools, users, and departments are responsible for contributing different prims to the final composed asset scene graph (such as geometry and materials), it can be beneficial to split the workstreams into multiple layers.</p>
+<p>Computational Workstreams: Assets can also be divided into computational workstreams. For instance, a synthetic data simulation might be partitioned across multiple processes or machines. A layer stack can then be used to stitch the results back together.</p>
+<p>Computational workstreams can be dynamic and may not remain consistent from one evaluation to the next. Consider a layer stack where workloads have been dynamically partitioned across multiple processes.</p>
+<p>Some workstreams are hybrids, combining both computational and user-driven elements. For example, a layer might contribute synthesized motion on top of a hand-authored initial state created by a user.</p>
+<p>Asset parameterization enables the reuse of content by allowing certain fields and properties to vary downstream.</p>
+<p>There are two primary ways to parameterize assets: variant sets and primvars.</p>
+<p>Variant Sets</p>
+<p>Primvars are extra parameters that can be interpolated and are primarily used to provide additional data to shading contexts. In OpenUSD, primvars are inherited down the prim hierarchy and can be authored on an ancestor prim, including the entry point of an asset.</p>
+<p>Instead of expecting users to know whether a complex asset requires payloading, many assets adopt the “reference-payload” pattern. This means their interface file is designed to be referenced, with the payload structure internal to the asset.</p>
+<p>Important and inexpensive fields like variant sets and inherits are elevated above the payload when they are moved from the contents layer to the interface layer.</p>
+<p>The references to the payload pattern can be used to recast a payload’s opinion ordering strength. While the example above uses an inline payload for brevity, if a mirroring resolver is used, it becomes important to keep the payload contents in separate layers.</p>
+<p>Through composition, OpenUSD can build complex hierarchies of scenes. At the levels of complexity required for a film production shot or a factory line simulation, a single scenegraph can become difficult to navigate for both algorithms and users.</p>
+<p>Model hierarchy (also known as kind metadata) offers a separate, higher-level view of the underlying scenegraph.</p>
+<p>Let’s talk about two of the specific model kinds, components and assemblies.</p>
+<p>The term component is often overloaded in many domains. It’s helpful to think of component models as roughly corresponding to consumer facing products. For example, a consumer can purchase a pen, and a consumer can purchase a house. Despite their differences in scale and complexity, both of these would be logical component models in a hierarchy.</p>
+<p>All ancestors of a component model must have their kind metadata set to either a group or a subkind of group, such as assembly. This requirement is primarily to ensure that component discovery is efficient for composition.</p>
+<p>Since the component model kind denotes a “leaf” asset or pruning point in the model hierarchy, component models cannot contain other component models as descendants. OpenUSD provides the “subcomponent” annotation for important prims that are outside the model hierarchy, which helps facilitate kind-based workflows. Subcomponent prims can contain other subcomponent prims.</p>
+<p>Assemblies are groups that usually correspond with aggregate assets.</p>
+<p>Assemblies are important groups that usually correspond to aggregate assets. If a house is a component model, then its neighborhood and city could be assembly models. In this example, a neighborhood may contain multiple intermediate group scopes in between the assembly and component for organizational purposes (say grouping trees, street lights, and architecture separately). Assembly models can contain other assembly models, group kinds, and component models.</p>
+<p>When creating a model hierarchy, there are four essential factors to keep in mind. These hierarchies should be operational, shallow, consistent, and extensible.</p>
+<p>Operational: Component and assembly models should be easily referenced in other contexts, and they should include all essential dependencies, such as material bindings or skeleton setups, that downstream users require.</p>
+<p>Shallowness: Asset structures should encourage a shallow model hierarchy. The kind metadata is explicitly read during composition for all members of the model hierarchy, with costs minimized in a shallow structure. A deep model hierarchy introduces a small but measurable overhead to composition and misses out on performance gains from pruned traversals. A gprim tagged as a component is a sign that a model hierarchy is “deep”.</p>
+<p>Consistency: As the language and expectations around components, subcomponents, and assemblies evolve within an ecosystem, it’s crucial that an asset consistently represents one of these concepts. For instance, it’s common to expect component models to be fully packaged and renderable, with their geometry and materials completely specified and organized into Geometry and Materials scopes.</p>
+<p>Extensibility: The Kind library that ships with OpenUSD can be extended using plugin info, allowing users to define their own extensions to component, assembly, and subcomponent kinds. For example, a pipeline might want to differentiate between various levels of assemblies (such as “location” vs “world”) or types of subcomponents.</p>
+<h2 id="course3-learn-openusd-developing-data-exchange-pipelines">Course3: Learn OpenUSD: Developing Data Exchange Pipelines</h2>
+<p>OpenUSD is commonly referred to as USD, which stands for Universal Scene Description. </p>
+<p>OpenUSD was developed by Pixar Animation Studios to address the complex 3D workflow challenges common in assembling and animating virtual worlds, where dozens of studios and specialties have to come together and collaborate on a single 3D scene.</p>
+<p>To solve these problems, Pixar built USD with a core set of schemas to effectively describe 3D scenes, including meshes, materials, lights, and cameras. These data models describe many of the elements you would need to be able to make a 3D scene, such as those seen in an animated film, and have been used successfully by many studios as a common interchange format to pass the data between applications.</p>
+<p>There are four common implementations for adding OpenUSD support for your data format or application:</p>
+<p>Importers
+Exporters
+Standalone converters
+File format plugins
+At a high-level, whether your data is represented as a file format or runtime format may dictate the type of implementation, but there are other factors to consider as well.</p>
+<p>File format plugins are a unique feature of OpenUSD. They allow OpenUSD to compose with additional file formats and even non-file-based sources, such as databases and procedurally generated content.</p>
+<p>OpenUSD’s flexibility and modularity make it suitable for a wide range of applications and industries. These features and its universality make the challenges of data exchange very apparent:</p>
+<p>Data exchange is typically lossy. Not every data model can be mapped directly.
+Not every consumer may be interested in all the data exported by a digital content creation (DCC) tool. For example, a CAD application may not need animation data.
+The content structure exported by a DCC tool may not be suitable for every organization and its workflows. There is no single content structure suitable for all end clients and organizations.
+Not every client can handle the same content fidelity (e.g., high-quality offline renderer vs. real-time 3D app on a phone).</p>
+<p>Two-Phase Data Exchange: To help with these data exchange challenges, we propose a two-phase approach: extract and transform. This is loosely inspired by Extract-Transform-Load (ETL) used in data analytics and machine learning. By following this two-phase data exchange approach, your implementation will solve many of today’s data exchange challenges and help you serve the widest range of customers.</p>
+<p>Data exchange to OpenUSD should start with the extract phase. The goal is to translate the data to OpenUSD as directly as possible to maintain fidelity to the source format. Try to map concepts from the source format to concepts in OpenUSD as much as possible to preserve the integrity and structure of the source data.</p>
+<p>The transform phase consists of one or more optional steps added to better meet end client and user needs. This includes:</p>
+<p>Applying user export options.
+Making changes to the content structure that deviate from the source format.
+Implementing optimizations for better end client and workflow performance.</p>
+<p><a href="https://docs.omniverse.nvidia.com/usd/code-docs/usd-exchange-sdk">OpenUSD Exchange SDK</a> helps developers design and develop their own USD I/O solutions that produce consistent and correct USD assets across diverse 3D ecosystems.</p>
+<p>It provides higher-level convenience functions on top of lower-level USD concepts, so developers can quickly adopt OpenUSD best practices when mapping their native data sources to OpenUSD-legible data models.</p>
+<p>Data transformation allows customers to tailor data to their specific needs. While DCC developers should ideally handle data extraction, they can leave transformation open for third-party developers to extend.</p>
+<p>Key aspects of data transformation include:</p>
+<p>Export options
+Content re-structuring
+Optimizations, e.g., mesh merging</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.c8b220af.min.js"></script>
+      
+    
+  </body>
+</html>

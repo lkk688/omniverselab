@@ -1,0 +1,1107 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../openusd_applied/">
+      
+      
+        <link rel="next" href="../kit_app_streaming/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.9">
+    
+    
+      
+        <title>Omniverse Kit - Omniverse Learning Lab</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.4af4bdda.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#omniverse-kit" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Omniverse Learning Lab" class="md-header__button md-logo" aria-label="Omniverse Learning Lab" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Omniverse Learning Lab
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Omniverse Kit
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Omniverse Learning Lab" class="md-nav__button md-logo" aria-label="Omniverse Learning Lab" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Omniverse Learning Lab
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    OpenUSD Foundations
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            OpenUSD Foundations
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../openusd_foundations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Foundations
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../openusd_applied/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Applied Concepts
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Omniverse Platform
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Omniverse Platform
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Omniverse Kit
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Omniverse Kit
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#course-an-introduction-to-developing-with-nvidia-omniverse" class="md-nav__link">
+    <span class="md-ellipsis">
+      Course: An Introduction to Developing With NVIDIA Omniverse
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Course: An Introduction to Developing With NVIDIA Omniverse">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#getting-started-with-kit-app-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Getting Started with Kit App Templates
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Getting Started with Kit App Templates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#creating-your-first-application" class="md-nav__link">
+    <span class="md-ellipsis">
+      Creating Your First Application
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#understanding-the-kit-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      Understanding the .kit File
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#building-and-launching-your-application" class="md-nav__link">
+    <span class="md-ellipsis">
+      Building and Launching Your Application
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exploring-your-application" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exploring Your Application
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#viewport-navigation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Viewport Navigation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#creating-a-usd-explorer-application" class="md-nav__link">
+    <span class="md-ellipsis">
+      Creating a USD Explorer Application
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Creating a USD Explorer Application">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usd-explorer-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      USD Explorer Setup
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extensions-building-blocks-of-kit-applications" class="md-nav__link">
+    <span class="md-ellipsis">
+      Extensions: Building Blocks of Kit Applications
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Extensions: Building Blocks of Kit Applications">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#understanding-extensions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Understanding Extensions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#working-with-extensions-in-development-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      Working with Extensions in Development Mode
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extension-management-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      Extension Management Workflow
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extension-development-best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      Extension Development Best Practices
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../kit_app_streaming/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Kit App Streaming
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Simulation & Robotics
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Simulation & Robotics
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../isaac_sim/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Isaac Sim
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ros2_integration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    ROS 2 Integration
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hil_sim/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    HIL Simulation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#course-an-introduction-to-developing-with-nvidia-omniverse" class="md-nav__link">
+    <span class="md-ellipsis">
+      Course: An Introduction to Developing With NVIDIA Omniverse
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Course: An Introduction to Developing With NVIDIA Omniverse">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#getting-started-with-kit-app-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Getting Started with Kit App Templates
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Getting Started with Kit App Templates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#creating-your-first-application" class="md-nav__link">
+    <span class="md-ellipsis">
+      Creating Your First Application
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#understanding-the-kit-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      Understanding the .kit File
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#building-and-launching-your-application" class="md-nav__link">
+    <span class="md-ellipsis">
+      Building and Launching Your Application
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exploring-your-application" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exploring Your Application
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#viewport-navigation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Viewport Navigation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#creating-a-usd-explorer-application" class="md-nav__link">
+    <span class="md-ellipsis">
+      Creating a USD Explorer Application
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Creating a USD Explorer Application">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usd-explorer-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      USD Explorer Setup
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extensions-building-blocks-of-kit-applications" class="md-nav__link">
+    <span class="md-ellipsis">
+      Extensions: Building Blocks of Kit Applications
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Extensions: Building Blocks of Kit Applications">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#understanding-extensions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Understanding Extensions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#working-with-extensions-in-development-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      Working with Extensions in Development Mode
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extension-management-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      Extension Management Workflow
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extension-development-best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      Extension Development Best Practices
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="omniverse-kit">Omniverse Kit</h1>
+<p>Build custom applications, extensions, and tools with NVIDIA Omniverse Kit - the powerful development platform for creating USD-based applications.</p>
+<h2 id="course-an-introduction-to-developing-with-nvidia-omniverse">Course: An Introduction to Developing With NVIDIA Omniverse</h2>
+<h3 id="getting-started-with-kit-app-templates">Getting Started with Kit App Templates</h3>
+<p><strong>Prerequisites:</strong>
+- Access to the Kit App Template repository: https://github.com/NVIDIA-Omniverse/kit-app-template
+- Development environment set up with appropriate tooling</p>
+<h4 id="creating-your-first-application">Creating Your First Application</h4>
+<p><strong>Step 1: Initialize a New Template</strong></p>
+<p>Open your terminal and run the template creation command for your operating system:</p>
+<p><strong>Windows:</strong></p>
+<pre><code class="language-bash">.\repo.bat template new
+</code></pre>
+<p><strong>Linux/macOS:</strong></p>
+<pre><code class="language-bash">./repo.sh template new
+</code></pre>
+<p>This command creates a new application from Kit SDK resources using an interactive setup process.</p>
+<p><strong>Step 2: Configure Your Application</strong></p>
+<p>You'll be prompted with a series of configuration questions. Use the arrow keys to navigate options and press Enter to confirm each selection:</p>
+<pre><code>Do you accept the EULA (End User License Agreement)?
+(Select Yes or No with arrow keys): Yes
+[ctrl+c to Exit]
+? Select with arrow keys what you want to create: Application&gt;
+? Select with arrow keys your desired template: [kit_base_editor]: Kit Base Editor
+? Enter name of application .kit file [name-spaced, lowercase, alphanumeric]:
+    my_company.my_editor
+? Enter application_display_name: My Editor
+? Enter version: 0.1.0
+</code></pre>
+<p><strong>Important:</strong> Choose <strong>Kit Base Editor</strong> as your template for this tutorial.</p>
+<h4 id="understanding-the-kit-file">Understanding the .kit File</h4>
+<p><strong>Location and Purpose:</strong>
+The generated <code>.kit</code> file can be found in <code>source\apps\</code> (or <code>source/apps/</code> on Linux/macOS). If you used the default name, it will be <code>my_company.my_editor.kit</code>.</p>
+<p><strong>What is a .kit File?</strong>
+The <code>.kit</code> file serves as a <strong>manifest</strong> that defines:
+- Which extensions to load from the Omniverse ecosystem
+- Application configuration and dependencies
+- Building blocks that compose your custom application</p>
+<p>Each entry in the <code>.kit</code> file represents a modular component that contributes specific functionality to your application.</p>
+<h4 id="building-and-launching-your-application">Building and Launching Your Application</h4>
+<p><strong>Step 1: Build the Application</strong></p>
+<p>Before running your application, you must compile it and prepare its extensions:</p>
+<p><strong>Windows:</strong></p>
+<pre><code class="language-bash">.\repo.bat build
+</code></pre>
+<p><strong>Linux/macOS:</strong></p>
+<pre><code class="language-bash">./repo.sh build
+</code></pre>
+<p>The build process compiles your application and its extensions, preparing them for launch.</p>
+<p><strong>Step 2: Launch the Application</strong></p>
+<p>Start your newly created application:</p>
+<p><strong>Windows:</strong></p>
+<pre><code class="language-bash">.\repo.bat launch
+</code></pre>
+<p><strong>Linux/macOS:</strong></p>
+<pre><code class="language-bash">./repo.sh launch
+</code></pre>
+<p>When prompted in the terminal, press <strong>Enter</strong> to select your application and begin the launch process.</p>
+<p><strong>Note:</strong> The first launch may take several minutes as resources are initialized. Subsequent launches will be faster.</p>
+<h4 id="exploring-your-application">Exploring Your Application</h4>
+<p><strong>Default Interface:</strong>
+Your Kit Base Editor application includes four main menus:
+- <strong>File</strong> - File operations and project management
+- <strong>Edit</strong> - Editing tools and preferences
+- <strong>Create</strong> - Content creation tools
+- <strong>Window</strong> - Interface and panel management</p>
+<p><strong>Menu Extensions in .kit File:</strong>
+These menus are defined by extensions in your <code>.kit</code> file:</p>
+<pre><code>&quot;omni.kit.menu.create&quot; = {} # Create menu
+&quot;omni.kit.menu.edit&quot; = {}  # Edit menu
+&quot;omni.kit.menu.file&quot; = {}  # File menu
+</code></pre>
+<h4 id="viewport-navigation">Viewport Navigation</h4>
+<p><strong>Interactive Controls:</strong>
+- <strong>Camera Movement:</strong> Right-click and hold (RMB) + WASD keys
+- <strong>Camera Speed:</strong> Middle scroll wheel while holding RMB
+- <strong>Camera Rotation:</strong> Drag with RMB
+- <strong>Focus Object:</strong> Press <strong>F</strong> key to center view on selected object
+- <strong>Combined Navigation:</strong> Use RMB + drag + WASD simultaneously for fluid movement</p>
+<h3 id="creating-a-usd-explorer-application">Creating a USD Explorer Application</h3>
+<p>Now let's create a more advanced application using the USD Explorer template, which provides enhanced tools for reviewing and working with large USD content.</p>
+<h4 id="usd-explorer-setup">USD Explorer Setup</h4>
+<p><strong>Step 1: Create USD Explorer Template</strong></p>
+<p>Run the template command again:</p>
+<p><strong>Windows:</strong></p>
+<pre><code class="language-bash">.\repo.bat template new
+</code></pre>
+<p><strong>Linux/macOS:</strong></p>
+<pre><code class="language-bash">./repo.sh template new
+</code></pre>
+<p>This time, select <strong>USD Explorer</strong> as your template. You'll see additional questions about "setup extension" configuration.</p>
+<p><strong>Step 2: Compare Applications</strong></p>
+<p>In VS Code:
+1. Open both <code>.kit</code> files: <code>my_company.my_editor.kit</code> and <code>my_company.my_usd_explorer.kit</code>
+2. Arrange them side by side for comparison
+3. Examine the <code>[dependencies]</code> sections - note the different extensions each application includes</p>
+<p><strong>Step 3: Build and Launch USD Explorer</strong></p>
+<p>Build the USD Explorer application:</p>
+<p><strong>Windows:</strong></p>
+<pre><code class="language-bash">.\repo.bat build
+</code></pre>
+<p><strong>Linux/macOS:</strong></p>
+<pre><code class="language-bash">./repo.sh build
+</code></pre>
+<p>Then launch it:</p>
+<p><strong>Windows:</strong></p>
+<pre><code class="language-bash">.\repo.bat launch
+</code></pre>
+<p><strong>Linux/macOS:</strong></p>
+<pre><code class="language-bash">./repo.sh launch
+</code></pre>
+<p>When prompted, select your new USD Explorer application.</p>
+<h3 id="extensions-building-blocks-of-kit-applications">Extensions: Building Blocks of Kit Applications</h3>
+<h4 id="understanding-extensions">Understanding Extensions</h4>
+<p><strong>What is an Extension?</strong></p>
+<p>Extensions are <strong>isolated units of application functionality</strong> that serve as the fundamental building blocks of Omniverse Kit-based applications. They can be developed using either:
+- <strong>Python</strong> - For rapid development and scripting
+- <strong>C++</strong> - For performance-critical functionality</p>
+<p><strong>How Extensions Work:</strong></p>
+<p>When an application starts up, it:
+1. <strong>Reads the .kit file</strong> - References the list of required extensions
+2. <strong>Loads Extensions</strong> - Initializes each extension as part of the application startup
+3. <strong>Integrates Functionality</strong> - Extensions contribute to the application's appearance and capabilities</p>
+<p>Each template includes several baseline extensions in its <code>.kit</code> file, with the expectation that developers will add additional extensions to build custom functionality.</p>
+<h4 id="working-with-extensions-in-development-mode">Working with Extensions in Development Mode</h4>
+<p><strong>Enabling Developer Mode:</strong></p>
+<p>To access extension management tools, launch your application with the <code>-d</code> parameter:</p>
+<p><strong>USD Explorer with Developer Mode:</strong></p>
+<p><strong>Windows:</strong></p>
+<pre><code class="language-bash">.\repo.bat launch -d
+</code></pre>
+<p><strong>Linux/macOS:</strong></p>
+<pre><code class="language-bash">./repo.sh launch -d
+</code></pre>
+<p><strong>Developer Mode Benefits:</strong>
+- <strong>Extensions Window</strong> - Access to extension browser and management
+- <strong>Developer Menu</strong> - Additional development tools and options
+- <strong>Runtime Extension Management</strong> - Enable/disable extensions without rebuilding</p>
+<h4 id="extension-management-workflow">Extension Management Workflow</h4>
+<p><strong>Method 1: Runtime Extension Management (USD Explorer)</strong></p>
+<ol>
+<li><strong>Launch with Developer Mode:</strong> Use the <code>-d</code> parameter when launching</li>
+<li><strong>Access Extensions Window:</strong> Navigate to <strong>Window &gt; Extensions</strong></li>
+<li><strong>Search and Install:</strong> Use the search bar to find extensions (e.g., "measure")</li>
+<li><strong>Enable Extensions:</strong> Toggle extensions on/off as needed</li>
+</ol>
+<p><strong>Example: Adding the Measure Tool</strong>
+1. Open the Extensions window
+2. Search for "measure" in the search bar
+3. Install and enable the Measure Tool extension
+4. Access new functionality through the application interface</p>
+<p><strong>Method 2: .kit File Configuration (Kit Base Editor)</strong></p>
+<p>For Kit Base Editor applications, extensions are typically managed through direct <code>.kit</code> file modification:</p>
+<ol>
+<li><strong>Launch with Developer Mode:</strong></li>
+</ol>
+<p><strong>Windows:</strong>
+   <code>bash
+   .\repo.bat launch -d</code></p>
+<p><strong>Linux/macOS:</strong>
+   <code>bash
+   ./repo.sh launch -d</code></p>
+<ol>
+<li><strong>Interface Differences:</strong></li>
+<li><strong>No Tools Menu</strong> - Kit Base Editor has a simpler interface</li>
+<li><strong>Developer Menu Available</strong> - Accessible due to <code>-d</code> parameter</li>
+<li><strong>Extension Management</strong> - Primarily through <code>.kit</code> file editing</li>
+</ol>
+<h4 id="extension-development-best-practices">Extension Development Best Practices</h4>
+<p><strong>Planning Your Extensions:</strong>
+- <strong>Modular Design</strong> - Keep extensions focused on specific functionality
+- <strong>Dependency Management</strong> - Clearly define extension dependencies
+- <strong>User Interface</strong> - Design intuitive interfaces for extension features
+- <strong>Performance</strong> - Consider the impact on application startup and runtime</p>
+<p><strong>Integration Strategies:</strong>
+- <strong>Template Selection</strong> - Choose the appropriate base template for your needs
+- <strong>Extension Layering</strong> - Build complex functionality through multiple cooperating extensions
+- <strong>Configuration Management</strong> - Use <code>.kit</code> files effectively to manage extension combinations</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.c8b220af.min.js"></script>
+      
+    
+  </body>
+</html>
