@@ -1,0 +1,7 @@
+#usda 1.0
+
+def Cube "TestCube"
+{
+    double size = 2
+}
+

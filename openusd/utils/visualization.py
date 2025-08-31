@@ -28,6 +28,11 @@ from uuid import uuid4
 
 from IPython.display import DisplayHandle, display, HTML
 from pxr import Gf, Usd, UsdGeom, UsdLux, Vt
+from pxr.Usd import Stage, Prim, StageCache, StageCacheContext, UseButDoNotPopulateCache
+from pxr.UsdGeom import Mesh, Tokens, Primvar
+from pxr.UsdLux import DistantLight, SphereLight, LightAPI, LightFilter
+from pxr.Gf import Vec3f
+from pxr.Vt import IntArray
 
 from .setup import get_content_directory, get_content_output_directory
 
@@ -236,11 +241,26 @@ def FlattenFile(input_file_path: str, show_usd_lights: bool = False) -> str:
     """
     log.debug(msg=f'Flattening file "{input_file_path}", show_usd_lights={show_usd_lights}.')
 
-    destination_file_path = input_file_path.replace(".usd", "_flattened.usd")
-    intermediary_file = input_file_path.replace(".usd", "_flattened-inter.usd")
+    # Handle different USD file extensions (usd, usda, usdc, usdz)
+    import os
+    base_name = os.path.splitext(input_file_path)[0]
+    file_extension = os.path.splitext(input_file_path)[1]
+    
+    # For USDZ files, we need to use .usda extension for intermediary and destination files
+    # since USDZ is a package format that cannot be exported to directly
+    if file_extension.lower() == '.usdz':
+        destination_file_path = base_name + "_flattened.usda"
+        intermediary_file = base_name + "_flattened-inter.usda"
+    else:
+        destination_file_path = input_file_path.replace(file_extension, "_flattened" + file_extension)
+        intermediary_file = input_file_path.replace(file_extension, "_flattened-inter" + file_extension)
+    
     original_stage = Usd.Stage.Open(input_file_path)
     original_stage.Flatten()
+    
+    # Export to USD format (not USDZ) to avoid the package export restriction
     original_stage.Export(intermediary_file)
+    
     _convert_geometry_primitives(
         source_file_path=intermediary_file,
         destination_file_path=destination_file_path,
@@ -936,4 +956,4 @@ def initialize_notebook() -> None:
     os.makedirs(name=get_content_output_directory(), exist_ok=True)
 
     # Launch an instance of the web server hosting the conversion web service:
-    start_server()
+    # start_server()  # TODO: Define start_server function or remove if not needed

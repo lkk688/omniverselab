@@ -1,5 +1,5 @@
 # omniverselab
-A curated lab for exploring the NVIDIA Omniverse ecosystem — including OpenUSD, Omniverse Kit, Isaac Sim, ROS 2 integration, and hardware-in-the-loop (HIL) simulation.
+A curated lab for exploring the NVIDIA Omniverse ecosystem — including OpenUSD, Omniverse Kit, Isaac Sim, ROS 2 integration, and hardware-in-the-loop (HIL) simulation. Document is hosted on: https://lkk688.github.io/omniverselab/
 
 ## 🔧 Modules Covered
 
@@ -9,6 +9,7 @@ A curated lab for exploring the NVIDIA Omniverse ecosystem — including OpenUSD
 - **Isaac Sim**: High-fidelity robotics simulation with physics.
 - **ROS 2 Integration**: Bridge simulation and robotics software.
 - **HIL Simulation**: Integrate Jetson and real hardware with Isaac Sim.
+- **VM System Check**: Comprehensive cloud VM environment analysis tools.
 
 ## 🗺️ Getting Started
 
@@ -27,8 +28,55 @@ mkdocs build
 mkdocs gh-deploy
 ```
 
+## 🖥️ VM System Check Tools
+
+Comprehensive system analysis tools designed for cloud VM environments, especially NVIDIA DLI cloud instances. These tools require **no sudo privileges** and provide detailed information about your system's capabilities.
+
+### Quick Start
+```bash
+# Python version (recommended - comprehensive analysis)
+python3 vm_system_check.py
+
+# Shell version (lightweight - basic checks)
+bash vm_system_check.sh
+
+# Interactive launcher (choose your preferred tool)
+bash run_system_check.sh
+```
+
+### What These Tools Check
+- ✅ **System Info**: OS, architecture, uptime, container detection
+- ✅ **CPU Details**: Model, cores, load average
+- ✅ **GPU Analysis**: NVIDIA GPU detection, VRAM, driver versions
+- ✅ **Memory Usage**: RAM capacity, availability, usage percentages
+- ✅ **Disk Space**: Storage usage with status indicators
+- ✅ **Network**: Local/public IP, connectivity, geographic location
+- ✅ **SSH Access**: Daemon status, port accessibility, key detection
+- ✅ **VS Code Web**: code-server detection, web IDE availability
+
+### Perfect for Cloud Environments
+- 🎯 **NVIDIA DLI Cloud Instances**: GPU detection and CUDA environment checking
+- 🎯 **AWS EC2, Google Cloud, Azure**: General cloud VM analysis
+- 🎯 **Remote Development**: SSH and web-based IDE setup verification
+- 🎯 **Educational Labs**: Quick system capability assessment
+
+For detailed documentation, see [README_VM_SYSTEM_CHECK.md](README_VM_SYSTEM_CHECK.md).
+
 ## OpenUSD
-The OpenUSD source code is located at the [OpenUSD Github repository](https://github.com/PixarAnimationStudios/OpenUSD). You can clone the repository and follow the repository’s build instructions to build OpenUSD from the source. Alternatively, NVIDIA provides pre-built binaries for Windows and Linux from [here](https://developer.nvidia.com/usd?sortBy=developer_learning_library%2Fsort%2Ffeatured_in.usd_resources%3Adesc%2Ctitle%3Aasc&hitsPerPage=6#section-getting-started). If you just need to use the OpenUSD Python API, you can install usd-core directly from PyPI, i.e., `pip install usd-core`.
+The OpenUSD source code is located at the [OpenUSD Github repository](https://github.com/PixarAnimationStudios/OpenUSD). You can clone the repository and follow the repository's build instructions to build OpenUSD from the source. Alternatively, NVIDIA provides pre-built binaries for Windows and Linux from [here](https://developer.nvidia.com/usd?sortBy=developer_learning_library%2Fsort%2Ffeatured_in.usd_resources%3Adesc%2Ctitle%3Aasc&hitsPerPage=6#section-getting-started). If you just need to use the OpenUSD Python API, you can install usd-core directly from PyPI, i.e., `pip install usd-core`.
+
+### OpenUSD Visualization Tools
+This repository includes custom visualization utilities for OpenUSD files:
+
+- **`openusd/myusddisplay.py`**: A comprehensive USD to GLB converter and viewer that supports multiple display methods:
+  - **Web Browser Display**: Interactive 3D viewing using Google's model-viewer with full camera controls, lighting, and material inspection
+  - **macOS Quick Look**: Native preview integration for basic 3D model viewing
+  - **Jupyter Notebook**: Inline 3D model display for educational and development workflows
+  - **Base64 Encoding**: CORS-free web display by embedding GLB data directly in HTML
+
+- **`openusd/test_usd_display.py`**: Test script demonstrating the visualization functionality with error handling and debugging features for various USD/USDZ file formats.
+
+These tools bridge the gap between USD's powerful scene description capabilities and accessible 3D visualization, making it easier to preview and share OpenUSD content across different platforms and environments.
 
 ### Pre-built binaries for Windows
 In Windows, Right-click the `usd.py311.windows-x86_64.usdview.release-0.25.05-25f3d3d8.zip` → “Extract All…” to extract the contents to a folder. Open Command Prompt or PowerShell, run the setup script:

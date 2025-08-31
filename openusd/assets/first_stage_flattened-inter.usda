@@ -1,0 +1,10 @@
+#usda 1.0
+(
+    doc = """Generated from Composed Stage of root layer /Users/kaikailiu/Documents/MyRepo/omniverselab/openusd/assets/first_stage.usda
+"""
+)
+
+def Cube "hello"
+{
+}
+

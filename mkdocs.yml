@@ -3,9 +3,13 @@ theme:
   name: material
 nav:
   - Home: index.md
-  - OpenUSD: openusd.md
-  - Omniverse Kit: omniverse_kit.md
-  - Kit App Streaming: kit_app_streaming.md
-  - Isaac Sim: isaac_sim.md
-  - ROS 2 Integration: ros2_integration.md
-  - HIL Simulation: hil_sim.md
+  - OpenUSD Foundations:
+    - Foundations: openusd_foundations.md
+    - Applied Concepts: openusd_applied.md
+  - Omniverse Platform:
+    - Omniverse Kit: omniverse_kit.md
+    - Kit App Streaming: kit_app_streaming.md
+  - Simulation & Robotics:
+    - Isaac Sim: isaac_sim.md
+    - ROS 2 Integration: ros2_integration.md
+    - HIL Simulation: hil_sim.md

@@ -209,3 +209,6 @@ __marimo__/
 
 .DS_Store
 omniverselab.code-workspace
+output/
+
+docs/cmpe249_isaac_sim_reflection.md
