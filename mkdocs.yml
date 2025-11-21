@@ -13,3 +13,4 @@ nav:
     - Isaac Sim: isaac_sim.md
     - ROS 2 Integration: ros2_integration.md
     - HIL Simulation: hil_sim.md
+    - Embodied AI: isaac_sim_embodied_ai.md

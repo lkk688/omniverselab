@@ -16,6 +16,7 @@ Welcome to the Omniverse Learning Lab! This comprehensive repository provides ha
 - **[Isaac Sim](isaac_sim.md)** - Robotics simulation, physics, sensors, and ROS integration
 - **[ROS2 Integration](ros2_integration.md)** - Connecting Isaac Sim with ROS2 ecosystems
 - **[Hardware-in-the-Loop Simulation](hil_sim.md)** - Real-world hardware integration with simulation
+- **[Embodied AI](isaac_sim_embodied_ai.md)** - Robotics simulation, physics, sensors, and ROS integration
 
 ## 🚀 Getting Started
 
