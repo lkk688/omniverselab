@@ -1,0 +1,1322 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../hil_sim/">
+      
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.9">
+    
+    
+      
+        <title>Embodied AI - Omniverse Learning Lab</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.4af4bdda.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#digital-twin-in-cmpe249-intelligent-autonomous-systems" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Omniverse Learning Lab" class="md-header__button md-logo" aria-label="Omniverse Learning Lab" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Omniverse Learning Lab
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Embodied AI
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Omniverse Learning Lab" class="md-nav__button md-logo" aria-label="Omniverse Learning Lab" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Omniverse Learning Lab
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    OpenUSD Foundations
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            OpenUSD Foundations
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../openusd_foundations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Foundations
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../openusd_applied/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Applied Concepts
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Omniverse Platform
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Omniverse Platform
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../omniverse_kit/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Omniverse Kit
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../kit_app_streaming/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Kit App Streaming
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Simulation & Robotics
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Simulation & Robotics
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../isaac_sim/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Isaac Sim
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ros2_integration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    ROS 2 Integration
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hil_sim/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    HIL Simulation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Embodied AI
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Embodied AI
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#module-4-digital-twinning-imitation-learning-and-sim-to-real-transfer" class="md-nav__link">
+    <span class="md-ellipsis">
+      Module 4: Digital Twinning, Imitation Learning, and Sim-to-Real Transfer
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#module-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      Module Overview
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#lecture-outline-syllabus" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lecture Outline &amp; Syllabus
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Lecture Outline &amp; Syllabus">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#week-1-the-environment-the-body-isaac-sim-basics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Week 1: The Environment &amp; The Body (Isaac Sim Basics)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Week 1: The Environment &amp; The Body (Isaac Sim Basics)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lecture-41-introduction-to-omniverse-usd" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lecture 4.1: Introduction to Omniverse &amp; USD
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lecture-42-sensorization-graph-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lecture 4.2: Sensorization &amp; Graph Control
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#week-2-the-digital-twin-interface-teleoperation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Week 2: The Digital Twin Interface (Teleoperation)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Week 2: The Digital Twin Interface (Teleoperation)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lecture-43-controller-mapping-the-human-in-the-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lecture 4.3: Controller Mapping (The Human-in-the-Loop)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lecture-44-physical-to-digital-bridge-the-twin-aspect" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lecture 4.4: Physical-to-Digital Bridge (The "Twin" Aspect)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#week-3-imitation-learning-with-hugging-face-lerobot" class="md-nav__link">
+    <span class="md-ellipsis">
+      Week 3: Imitation Learning with Hugging Face LeRobot
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Week 3: Imitation Learning with Hugging Face LeRobot">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lecture-45-data-collection-for-behavioral-cloning" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lecture 4.5: Data Collection for Behavioral Cloning
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lecture-46-model-architectures-fine-tuning" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lecture 4.6: Model Architectures &amp; Fine-Tuning
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#week-4-deployment-evaluation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Week 4: Deployment &amp; Evaluation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Week 4: Deployment &amp; Evaluation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lecture-47-inference-evaluation-in-the-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lecture 4.7: Inference &amp; Evaluation in the Loop
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lecture-48-the-path-to-sim-to-real-advanced" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lecture 4.8: The Path to Sim-to-Real (Advanced)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#major-course-assignment-the-digital-puppeteer" class="md-nav__link">
+    <span class="md-ellipsis">
+      Major Course Assignment: "The Digital Puppeteer"
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#technical-stack-implementation-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      Technical Stack &amp; Implementation Details
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Technical Stack &amp; Implementation Details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#software-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      Software Requirements
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setup-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      Setup Checklist
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      Resources
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#important-reference-links" class="md-nav__link">
+    <span class="md-ellipsis">
+      Important Reference Links
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#module-4-digital-twinning-imitation-learning-and-sim-to-real-transfer" class="md-nav__link">
+    <span class="md-ellipsis">
+      Module 4: Digital Twinning, Imitation Learning, and Sim-to-Real Transfer
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#module-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      Module Overview
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#lecture-outline-syllabus" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lecture Outline &amp; Syllabus
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Lecture Outline &amp; Syllabus">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#week-1-the-environment-the-body-isaac-sim-basics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Week 1: The Environment &amp; The Body (Isaac Sim Basics)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Week 1: The Environment &amp; The Body (Isaac Sim Basics)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lecture-41-introduction-to-omniverse-usd" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lecture 4.1: Introduction to Omniverse &amp; USD
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lecture-42-sensorization-graph-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lecture 4.2: Sensorization &amp; Graph Control
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#week-2-the-digital-twin-interface-teleoperation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Week 2: The Digital Twin Interface (Teleoperation)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Week 2: The Digital Twin Interface (Teleoperation)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lecture-43-controller-mapping-the-human-in-the-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lecture 4.3: Controller Mapping (The Human-in-the-Loop)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lecture-44-physical-to-digital-bridge-the-twin-aspect" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lecture 4.4: Physical-to-Digital Bridge (The "Twin" Aspect)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#week-3-imitation-learning-with-hugging-face-lerobot" class="md-nav__link">
+    <span class="md-ellipsis">
+      Week 3: Imitation Learning with Hugging Face LeRobot
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Week 3: Imitation Learning with Hugging Face LeRobot">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lecture-45-data-collection-for-behavioral-cloning" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lecture 4.5: Data Collection for Behavioral Cloning
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lecture-46-model-architectures-fine-tuning" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lecture 4.6: Model Architectures &amp; Fine-Tuning
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#week-4-deployment-evaluation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Week 4: Deployment &amp; Evaluation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Week 4: Deployment &amp; Evaluation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lecture-47-inference-evaluation-in-the-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lecture 4.7: Inference &amp; Evaluation in the Loop
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lecture-48-the-path-to-sim-to-real-advanced" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lecture 4.8: The Path to Sim-to-Real (Advanced)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#major-course-assignment-the-digital-puppeteer" class="md-nav__link">
+    <span class="md-ellipsis">
+      Major Course Assignment: "The Digital Puppeteer"
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#technical-stack-implementation-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      Technical Stack &amp; Implementation Details
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Technical Stack &amp; Implementation Details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#software-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      Software Requirements
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setup-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      Setup Checklist
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      Resources
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#important-reference-links" class="md-nav__link">
+    <span class="md-ellipsis">
+      Important Reference Links
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="digital-twin-in-cmpe249-intelligent-autonomous-systems">Digital Twin in CMPE249: Intelligent Autonomous Systems</h1>
+<h2 id="module-4-digital-twinning-imitation-learning-and-sim-to-real-transfer">Module 4: Digital Twinning, Imitation Learning, and Sim-to-Real Transfer</h2>
+<ul>
+<li>Instructor: Kaikai Liu</li>
+<li>Duration: 4 Weeks (8 Lectures + 1 Capstone Project)</li>
+<li>Prerequisites: Python, Introduction to Deep Learning, Basic ROS2 concepts</li>
+</ul>
+<h2 id="module-overview">Module Overview</h2>
+<p>This advanced module integrates NVIDIA Omniverse Isaac Sim with modern imitation learning using Hugging Face LeRobot. You will bridge simulation and reality by constructing a Digital Twin workflow. The focus is an end-to-end pipeline:</p>
+<ul>
+<li>Author photorealistic, physics-accurate environments and robots in Isaac Sim (USD-first)</li>
+<li>Teleoperate in simulation to collect expert demonstrations with physical controllers</li>
+<li>Curate multi-modal datasets suitable for imitation learning and foundation models</li>
+<li>Fine-tune policies (e.g., ACT, Diffusion) on task-specific data</li>
+<li>Deploy models back into simulation for evaluation and iterate toward sim-to-real transfer</li>
+</ul>
+<p>References: see <a href="../openusd_foundations/">OpenUSD Foundations</a>, <a href="../openusd_applied/">OpenUSD Applied</a>, and <a href="../omniverse_kit/">Omniverse Kit</a> for USD scene authoring and Kit workflows.</p>
+<p>Example Student Demo Previews (final project exemplars):</p>
+<p><a href="https://drive.google.com/file/d/1Pug3rc_eojC1vSTjfSJugYlq-OljYaCm/view?usp=sharing"><img alt="Student Demo 1 – Teleoperation + Imitation Learning" src="https://drive.google.com/thumbnail?id=1Pug3rc_eojC1vSTjfSJugYlq-OljYaCm&amp;sz=w1280" /></a></p>
+<p><a href="https://drive.google.com/file/d/1ntHsYPGK7SCwgdBlOAo_YxgX1r2bIwMr/view?usp=sharing"><img alt="Student Demo 2 – Digital Twin Deployment" src="https://drive.google.com/thumbnail?id=1ntHsYPGK7SCwgdBlOAo_YxgX1r2bIwMr&amp;sz=w1280" /></a></p>
+<p>Each preview image links to the full Google Drive video. These demos illustrate expected outcomes: end-to-end teleop data collection, dataset curation, policy training, and deployment in the Digital Twin.</p>
+<h2 id="learning-objectives">Learning Objectives</h2>
+<p>By the end of this module, students will be able to:</p>
+<ul>
+<li>Architect a Digital Twin: build physics-accurate robotic environments with calibrated sensors (LiDAR, RGB-D)</li>
+<li>Implement teleoperation pipelines: map PS5 DualSense inputs and real-arm joint states to virtual robots</li>
+<li>Engineer datasets: record synchronized observations and actions; clean, label, and structure for LeRobot</li>
+<li>Train foundation policies: fine-tune ACT and Diffusion-based models on task-specific demonstrations</li>
+<li>Evaluate in simulation: measure success rate, time-to-completion, and collisions under domain randomization</li>
+<li>Plan sim-to-real transfer: identify gaps, design adaptation strategies, and safety-check deployments</li>
+</ul>
+<h2 id="lecture-outline-syllabus">Lecture Outline &amp; Syllabus</h2>
+<h3 id="week-1-the-environment-the-body-isaac-sim-basics">Week 1: The Environment &amp; The Body (Isaac Sim Basics)</h3>
+<h4 id="lecture-41-introduction-to-omniverse-usd">Lecture 4.1: Introduction to Omniverse &amp; USD</h4>
+<p>Understanding the Universal Scene Description (USD) format.</p>
+<p>Importing URDFs (Universal Robot Description Format) into Isaac Sim.</p>
+<p>Rigging the robot: Articulation Roots, Joints, and Drives.</p>
+<p>Lab Activity: Importing a Mobile Manipulator (e.g., Franka Emika or custom wheeled robot) into a warehouse scene.</p>
+<p>Lab Deliverables:
+- USD stage with articulated robot and base environment
+- Attached sensors (RGB-D, LiDAR) validated via Kit viewport and simple OmniGraph
+- Screenshot or short clip demonstrating sensor outputs</p>
+<h4 id="lecture-42-sensorization-graph-control">Lecture 4.2: Sensorization &amp; Graph Control</h4>
+<p>Attaching Sensors: RTX Lidar, RGB-D Cameras, and IMUs.</p>
+<p>OmniGraph Basics: Visual scripting for sensor publishing.</p>
+<p>Ground Truth vs. Noisy Data: Configuring sensor noise models for realism.</p>
+<p>Lab Checklist:
+- Create an OmniGraph pipeline for publishing camera and LiDAR frames
+- Enable noise models and compare outputs against ground truth labels
+- Document sensor calibration parameters (FOV, resolution, extrinsics)</p>
+<p>Technical Details:
+- Camera intrinsics: choose focal length to match target FOV; verify projection against known checkerboard/Charuco pattern in-sim
+- Extrinsics: fix sensor mounts on the robot link with USD Xform; record transform tree for dataset metadata
+- RTX LiDAR: configure horizontal/vertical resolution, max range, and material reflectance; validate point cloud density and noise
+- OmniGraph: use Sensor → Writer nodes to publish frames; ensure consistent timestamping via simulation time</p>
+<h3 id="week-2-the-digital-twin-interface-teleoperation">Week 2: The Digital Twin Interface (Teleoperation)</h3>
+<h4 id="lecture-43-controller-mapping-the-human-in-the-loop">Lecture 4.3: Controller Mapping (The Human-in-the-Loop)</h4>
+<p>Interfacing hardware with Python (evdev, inputs, or ROS2 Joy).</p>
+<p>Mapping Strategy:</p>
+<p>Locomotion: Mapping PS5 analog sticks to differential/holonomic drive commands.</p>
+<p>Manipulation: Introduction to Inverse Kinematics (IK) solvers in Isaac (Lula/RMPflow).</p>
+<h4 id="lecture-44-physical-to-digital-bridge-the-twin-aspect">Lecture 4.4: Physical-to-Digital Bridge (The "Twin" Aspect)</h4>
+<p>Concept: The Physical "Leader" Arm and the Virtual "Follower."</p>
+<p>Streaming joint states from a physical arm (e.g., widowX, xArm) into Isaac Sim via TCP/IP or ROS2.</p>
+<p>Synchronization challenges: Latency, frequency matching, and safety limits.</p>
+<p>Practical Notes:
+- Use <code>pygame</code> for PS5 input capture; consider ROS2 <code>joy</code> for ROS-native workflows
+- Log controller events alongside simulation timestamps for dataset alignment
+- Implement basic safety guards (rate limiting, joint bounds) during teleop</p>
+<p>Teleop Mapping Details:
+- DualSense axes (typical): left stick (x: axis 0, y: axis 1), right stick (x: axis 3, y: axis 4); triggers as analog buttons (L2/R2)
+- Base control: map left stick to linear/angular velocities; apply deadzone and smoothing filters
+- Arm control: use right stick for EE position deltas; combine with shoulder buttons for mode switching (position vs. orientation)
+- IK &amp; control: prefer Lula/RMPflow for smooth joint targets; clamp velocities and acceleration; enforce joint limit safety</p>
+<h3 id="week-3-imitation-learning-with-hugging-face-lerobot">Week 3: Imitation Learning with Hugging Face LeRobot</h3>
+<h4 id="lecture-45-data-collection-for-behavioral-cloning">Lecture 4.5: Data Collection for Behavioral Cloning</h4>
+<p>Defining the Task: Pick-and-Place or Navigation.</p>
+<p>The Dataset Format: Recording observation.images, observation.state, and action (joint velocities/positions) at 30Hz-50Hz.</p>
+<p>Using the LeRobot dataset structure (Hugging Face Hub standards).</p>
+<p>Dataset Schema (recommended):
+- <code>observation.images</code>: resized RGB (e.g., 320x240), optionally depth
+- <code>observation.state</code>: joint positions/velocities, end-effector pose
+- <code>action</code>: joint targets or velocity commands at 30–50 Hz
+- <code>meta</code>: timestamps, episode ids, task labels</p>
+<p>Dataset Engineering Details:
+- File structure: episodes segmented (e.g., <code>episode_0001/frames</code>, <code>episode_0001/actions.npy</code>, <code>meta.json</code>)
+- Time sync: use simulation clock; align image timestamps with action timestamps; store frequency and unit in metadata
+- Compression: PNG or JPEG for images; consider chunked arrays (<code>.npz</code>/Arrow) for states/actions
+- Quality control: remove outlier frames; ensure consistent action scaling; document normalization</p>
+<h4 id="lecture-46-model-architectures-fine-tuning">Lecture 4.6: Model Architectures &amp; Fine-Tuning</h4>
+<p>Introduction to LeRobot: Library structure and pre-trained models.</p>
+<p>Theory: ACT (Action Chunking with Transformers) and Diffusion Policies.</p>
+<p>Fine-tuning: Taking a foundation model trained on large datasets (e.g., Open X-Embodiment) and adapting it to our specific Isaac Sim task.</p>
+<p>Training Tips:
+- Start with ACT for temporally coherent actions; compare with Diffusion for robustness
+- Normalize observations (images/state) consistently across train and eval
+- Use modest horizons first (8–16) and increase as stability improves
+- Monitor success metrics, not just loss; add curriculum by randomizing object positions
+- Hardware: ensure GPU memory headroom; enable mixed precision where supported</p>
+<h3 id="week-4-deployment-evaluation">Week 4: Deployment &amp; Evaluation</h3>
+<h4 id="lecture-47-inference-evaluation-in-the-loop">Lecture 4.7: Inference &amp; Evaluation in the Loop</h4>
+<p>Loading the trained PyTorch model.</p>
+<p>Closing the loop: Feeding live Isaac Sim camera frames to the model $\rightarrow$ Predicting actions $\rightarrow$ Applying actions to the Sim robot.</p>
+<p>Designing Evaluation Metrics: Success rate, time-to-completion, collision checks.</p>
+<p>Evaluation Extensions:
+- Domain randomization sweeps (textures, lighting, dynamics) to test robustness
+- Ablation studies comparing ACT vs. Diffusion policies and sensor subsets
+- Logging and visualization of trajectories for qualitative analysis</p>
+<p>Evaluation Protocol:
+- Define task success criteria (e.g., object grasped within N seconds, minimal collisions)
+- Run multiple seeds and initializations; report mean ± std for metrics
+- Record per-episode traces (images, actions, states) for post-hoc analysis
+- Compare policies under identical randomization settings to isolate effects</p>
+<h4 id="lecture-48-the-path-to-sim-to-real-advanced">Lecture 4.8: The Path to Sim-to-Real (Advanced)</h4>
+<p>Domain Randomization: Varying textures, lighting, and physics properties in Isaac to prevent overfitting.</p>
+<p>Strategy for transferring the LeRobot policy to the physical hardware.</p>
+<p>Sim-to-Real Checklist:
+- Calibrate real sensors to match simulated intrinsics/extrinsics
+- Apply domain adaptation (style augmentation, feature normalization) to bridge sim-to-real
+- Enforce safety: rate limiting, emergency stop, workspace constraints
+- Incremental deployment: dry-run without actuation, then low-power tests, then full autonomy</p>
+<p>Assessment &amp; Grading:
+- Labs (Weeks 1–3): 30%
+- Capstone project (pipeline completeness, reproducibility): 45%
+- Final evaluation report (metrics, analysis, video demo): 20%
+- Participation (discussions, code reviews): 5%</p>
+<h2 id="major-course-assignment-the-digital-puppeteer">Major Course Assignment: "The Digital Puppeteer"</h2>
+<p>Objective: Create an autonomous clean-up robot pipeline.
+Hardware: PC with NVIDIA RTX GPU, PS5 Controller, (Optional) Desktop Robotic Arm.</p>
+<p>Phase 1: Scene &amp; Robot Setup (Isaac Sim)</p>
+<p>Create a "Tabletop" environment in Isaac Sim with 3 random objects (cubes/cans).</p>
+<p>Import a mobile manipulator robot.</p>
+<p>Deliverable: A USD file where the robot can be controlled via keyboard, and sensors (Camera/Lidar) are visualizing data.</p>
+<p>Phase 2: The Teleop &amp; Data Collector</p>
+<p>Write a Python script teleop_collect.py.</p>
+<p>Locomotion: Bind PS5 Left Analog Stick to robot base velocity.</p>
+<p>Manipulation:</p>
+<p>Option A (Sim-Only): Bind PS5 Right Stick to End-Effector IK target.</p>
+<p>Option B (Digital Twin): Connect physical arm USB. Read joint angles. Apply these angles directly to the Isaac Sim robot joints (ignoring physics/collision for the "ghost" arm, or using PD control for the physics arm).</p>
+<p>Recording: Implement a "Record" button (PS5 'X' button). When held, save synchronized frames (320x240 resized) and joint positions to a local folder structured for LeRobot.</p>
+<p>Deliverable: A dataset of 50 successful "pick up object" demonstrations.</p>
+<p>Milestones &amp; Rubric:
+- M1 (Environment &amp; Sensors): robot imported, sensors streaming (10%)
+- M2 (Teleop &amp; Recorder): controller mapping, synchronized logging (15%)
+- M3 (Dataset &amp; Training): formatted dataset, training run completes (20%)
+- M4 (Inference &amp; Evaluation): autonomous run with metrics + video (25%)
+- Report: method, results, lessons learned, next steps (30%)</p>
+<p>Phase 3: Training with LeRobot</p>
+<p>Convert your raw dataset to the LeRobot / Hugging Face dataset format (.arrow or standard folders).</p>
+<p>Use the provided Colab/Local notebook to fine-tune a Diffusion Policy.</p>
+<p>Training configurations:</p>
+<p>Batch size: 32</p>
+<p>Epochs: 500</p>
+<p>Horizon: 16 steps (Action Chunking).</p>
+<p>Deliverable: Training loss graphs and the saved model weights (policy.pt).</p>
+<p>Phase 4: Deployment (Inference)</p>
+<p>Write eval_policy.py.</p>
+<p>Load the trained policy.</p>
+<p>Reset the Isaac Sim environment.</p>
+<p>Run the robot autonomously. The script should capture camera data from Sim, pass it to the model, and execute the returned actions.</p>
+<p>Deliverable: A video recording of the robot successfully performing the task autonomously in Isaac Sim.</p>
+<p>Submission Guidelines:
+- Repository: include scripts (<code>teleop_collect.py</code>, <code>eval_policy.py</code>), configs, and README
+- Data: sample episode (images + actions) and dataset conversion script/notebook
+- Report: PDF with methodology, metrics tables, and links to demo video</p>
+<h2 id="technical-stack-implementation-details">Technical Stack &amp; Implementation Details</h2>
+<h3 id="software-requirements">Software Requirements</h3>
+<ul>
+<li>OS: Ubuntu 20.04/22.04</li>
+<li>Simulation: NVIDIA Isaac Sim 4.0+</li>
+<li>ML Framework: PyTorch, Hugging Face LeRobot, Diffusers</li>
+<li>Control: pygame (for PS5), rospy/rclpy (optional, for ROS bridge)</li>
+</ul>
+<h3 id="setup-checklist">Setup Checklist</h3>
+<ul>
+<li>Isaac Sim 4.0+ installed and validated (see <code>docs/isaac_sim.md</code>)</li>
+<li>Python environment with PyTorch, LeRobot, Diffusers, and required drivers</li>
+<li>PS5 controller paired and recognized (<code>pygame</code> or <code>ros2 joy</code>)</li>
+<li>Optional ROS2 bridge configured for joint streaming</li>
+</ul>
+<p>Domain Randomization &amp; Synthetic Data:
+- Use Omniverse Replicator to randomize materials, lighting, and physics parameters
+- Vary textures, backgrounds, object positions, and physical properties across episodes
+- Export synthetic datasets with perfect ground truth for benchmarking and pretraining</p>
+<h3 id="resources">Resources</h3>
+<ul>
+<li>USD &amp; Kit: <a href="../openusd_foundations/">OpenUSD Foundations</a>, <a href="../openusd_applied/">OpenUSD Applied</a>, <a href="../omniverse_kit/">Omniverse Kit</a></li>
+<li>Isaac Sim: <a href="../isaac_sim/">Isaac Sim</a></li>
+<li>ROS 2 Integration: <a href="../ros2_integration/">ROS 2 Integration</a></li>
+</ul>
+<h3 id="important-reference-links">Important Reference Links</h3>
+<ul>
+<li>NVIDIA Isaac Sim Docs: https://docs.omniverse.nvidia.com/isaacsim/latest/</li>
+<li>Omniverse Replicator (synthetic data): https://developer.nvidia.com/omniverse/replicator</li>
+<li>OmniGraph Overview: https://docs.omniverse.nvidia.com/kit/docs/omni.graph/latest/overview.html</li>
+<li>USD (Pixar): https://graphics.pixar.com/usd/docs/index.html</li>
+<li>Hugging Face LeRobot: https://github.com/huggingface/lerobot</li>
+<li>Open X-Embodiment (foundation dataset): https://arxiv.org/abs/2306.08764</li>
+<li>ACT (Action Chunking with Transformers): https://arxiv.org/abs/2304.13705</li>
+<li>Diffusion Policy for Robot Control: https://arxiv.org/abs/2303.01469</li>
+<li>ROS 2 Docs: https://docs.ros.org/en/</li>
+<li>pygame DualSense input: https://www.pygame.org/docs/</li>
+<li>RMPflow (Isaac): https://docs.omniverse.nvidia.com/isaacsim/latest/robotics_isaac/motion_generation.html</li>
+<li>Lula IK: https://docs.omniverse.nvidia.com/isaacsim/latest/robotics_isaac/ik_solver.html</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.c8b220af.min.js"></script>
+      
+    
+  </body>
+</html>
