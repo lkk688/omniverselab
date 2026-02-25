@@ -319,6 +319,11 @@ simulation control
 (isaac_lerobot) lkk@rtx5090:/Developer/IsaacLab$ ./isaaclab.sh -p scripts/tools/record_demos.py --task Isaac-Lift-Cube-Franka-IK-Rel-v0 --teleop_device keyboard --num_demos 1
 
 ./isaaclab.sh -p scripts/tools/record_demos.py --task Isaac-Lift-Cube-Franka-IK-Rel-v0 --teleop_device gamepad --num_demos 1
+
+#streaming
+./isaaclab.sh -p scripts/tools/record_demos.py --task Isaac-Lift-Cube-Franka-IK-Rel-v0 --teleop_device keyboard --num_demos 100 --livestream 2
+
+./isaaclab.sh -p scripts/tools/record_demos.py --task Isaac-Lift-Cube-Franka-IK-Rel-v0 --teleop_device gamepad --num_demos 100 --livestream 2
 ```
 
 ```bash
