@@ -244,3 +244,126 @@ Available kernels:
 
 [Omniverse Kit App Template](https://github.com/NVIDIA-Omniverse/kit-app-template)
 
+# ISAAC Sim Setup
+https://isaac-sim.github.io/IsaacLab/main/source/setup/installation/pip_installation.html
+
+```bash
+conda create -n isaac_lerobot python=3.11 -y
+conda activate isaac_lerobot
+python -m pip install --upgrade pip
+pip install -U torch==2.7.0 torchvision==0.22.0 --index-url https://download.pytorch.org/whl/cu128
+
+pip install "isaacsim[all,extscache]==5.1.0" --extra-index-url https://pypi.nvidia.com
+
+
+```
+
+```bash
+# 1. 设置 ROS 发行版
+export ROS_DISTRO=jazzy
+
+# 2. 设置底层通信中间件
+export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+
+# 3. 将 conda 环境下的 ROS2 库路径添加到系统的动态库查找路径中
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/lkk/miniconda3/envs/isaac_lerobot/lib/python3.11/site-packages/isaacsim/exts/isaacsim.ros2.bridge/jazzy/lib
+
+# 1. 创建一个 32GB 的交换文件 (会占用一点硬盘空间，但能保命)
+sudo fallocate -l 32G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+
+# 2. 检查是否成功开启
+sudo swapon --show
+
+# note: you can pass the argument "--help" to see all arguments possible.
+isaacsim
+
+# experience files can be absolute path, or relative path searched in isaacsim/apps or omni/apps
+isaacsim isaacsim.exp.full.kit
+```
+
+```bash
+git clone https://github.com/isaac-sim/IsaacLab.git
+(isaac_lerobot) lkk@rtx5090:/Developer$ cd IsaacLab/
+(isaac_lerobot) lkk@rtx5090:/Developer/IsaacLab$ ./isaaclab.sh --install
+
+git clone https://github.com/huggingface/lerobot.git
+(isaac_lerobot) lkk@rtx5090:/Developer$ cd lerobot/
+(isaac_lerobot) lkk@rtx5090:/Developer/lerobot$ pip install -e ".[aloha,pi]"
+
+pip uninstall transformers -y
+pip install git+https://github.com/huggingface/transformers.git@fix/lerobot_openpi
+
+pip install av wandb
+```
+
+```bash
+pip uninstall torchcodec
+
+(isaac_lerobot) lkk@rtx5090:/Developer/lerobot$ python src/lerobot/scripts/lerobot_dataset_viz.py   --repo-id lerobot/aloha_sim_insertion_human   --episode-index 0
+
+(isaac_lerobot) lkk@rtx5090:/Developer/IsaacLab$ ./isaaclab.sh -p scripts/tutorials/00_sim/create_empty.py
+(isaac_lerobot) lkk@rtx5090:/Developer/IsaacLab$ python scripts/tutorials/00_sim/create_empty.py
+
+#use Isaac Lab to train a robot through Reinforcement Learning
+(isaac_lerobot) lkk@rtx5090:/Developer/IsaacLab$ ./isaaclab.sh -p scripts/reinforcement_learning/rsl_rl/train.py --task=Isaac-Ant-v0 --headless
+
+(isaac_lerobot) lkk@rtx5090:/Developer/IsaacLab$ ./isaaclab.sh -p scripts/reinforcement_learning/rsl_rl/train.py --task=Isaac-Velocity-Rough-Anymal-C-v0 
+
+```
+
+simulation control
+```bash
+(isaac_lerobot) lkk@rtx5090:/Developer/IsaacLab$ ./isaaclab.sh -p scripts/tools/record_demos.py --task Isaac-Lift-Cube-Franka-IK-Rel-v0 --teleop_device keyboard --num_demos 1
+
+./isaaclab.sh -p scripts/tools/record_demos.py --task Isaac-Lift-Cube-Franka-IK-Rel-v0 --teleop_device gamepad --num_demos 1
+```
+
+```bash
+# 1. 强制 MuJoCo 使用 EGL 渲染后端
+export MUJOCO_GL=egl
+
+# 2. 运行评估命令
+python -m lerobot.scripts.lerobot_eval \
+  --policy.type act \
+  --policy.pretrained_path /Developer/aloha_act_last/last/pretrained_model \
+  --env.type aloha \
+  --eval.n_episodes 10 \
+  --eval.batch_size 1
+# outputs/eval/2026-02-23/22-33-10_aloha_act/videos/aloha_0/eval_episode_0.mp4'
+
+
+# 确保已经设置了离线渲染环境变量，防止 5090 弹窗冲突
+export MUJOCO_GL=egl
+
+python -m lerobot.scripts.lerobot_eval \
+  --policy.type pi0 \
+  --policy.pretrained_path /Developer/aloha_pi0_last/last/pretrained_model \
+  --env.type aloha \
+  --eval.n_episodes 10 \
+  --eval.batch_size 1 \
+  --device cuda
+
+python -m lerobot.scripts.lerobot_eval \
+  --policy.pretrained_path ./my_local_model \
+  --env.type aloha \
+  --eval.n_episodes 10 \
+  --eval.batch_size 1 \
+  --device cuda
+
+python -m lerobot.scripts.lerobot_eval \
+  --policy.pretrained_path ./my_pi0_model \
+  --env.type aloha \
+  --eval.n_episodes 10 \
+  --eval.batch_size 1 \
+  --device cuda
+
+# 在 Isaac Lab 环境中运行数据收集脚本
+python source/standalone/workflows/teleoperation/teleop_se3_agent.py \
+  --task Isaac-Repose-Cube-Aloha-v0 \
+  --teleop_device keyboard \
+  --save_lerobot_dataset True \
+  --dataset_dir ./my_custom_dataset
+```
