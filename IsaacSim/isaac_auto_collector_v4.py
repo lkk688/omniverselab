@@ -20,14 +20,14 @@ Improvements over V3:
 Supported environments (--env):
     lift-ik-rel   Isaac-Lift-Cube-Franka-IK-Rel-v0       [DEFAULT, best tested]
     stack-ik-rel  Isaac-Stack-Cube-Franka-IK-Rel-v0      [pick cube_1, stack on cube_2]
-    reach-ik-rel  Isaac-Reach-Franka-IK-Rel-v0           [reach only, no pick]
-    open-drawer   Isaac-Open-Drawer-Franka-IK-Rel-v0     [drawer pull, needs tuning]
+    open-drawer   Isaac-Open-Drawer-Franka-IK-Rel-v0     [horizontal grasp & pull]
 
     All use IK-Rel (7-D Cartesian delta) action space — the same as our controller.
 
     NOT supported (different action spaces, incompatible with IK-Rel controller):
         Isaac-Lift-Cube-Franka-IK-Abs-v0  — expects absolute EE pose commands
         Isaac-Lift-Cube-Franka-v0         — expects joint-angle commands
+        Isaac-Reach-Franka-IK-Rel-v0      — no scene object entity (goal via command manager)
 
 Run:
     conda activate isaac_lerobot
@@ -129,6 +129,32 @@ class EnvPreset:
     # and warns (but does not crash) if it differs.
     action_dim: int = 7
 
+    # Generalised approach/retreat directions (unit vectors, world frame).
+    #   Lift tasks:   approach=(0,0,1), retreat=(0,0,1)   — come from above, lift up
+    #   Drawer task:  approach=(-1,0,0), retreat=(-1,0,0) — come from front, pull back
+    approach_dir_world: tuple = (0.0, 0.0, 1.0)
+    retreat_dir_world:  tuple = (0.0, 0.0, 1.0)
+
+    # Desired gripper pitch in radians.
+    #   0      = gripper pointing straight down (cube pick)
+    #   π/2    = gripper pointing horizontally forward (drawer handle)
+    target_pitch: float = 0.0
+
+    # Body name for the grasp target on articulated objects.
+    # If set, body_pos_w is used for pick_pos instead of root_pos_w.
+    # For Isaac-Open-Drawer: "drawer_handle_top"
+    handle_body: str = ""
+
+    # Minimum displacement (m) along retreat_dir to confirm success.
+    # 0 = use min_cube_lift_z instead (default for cube pick tasks).
+    verify_min_pull: float = 0.0
+
+    # World-frame offset applied to obj_pos before any target computation.
+    # Useful when the tracked body origin is not at the actual grasp point.
+    # Example: drawer_handle_top body origin is at the drawer top edge;
+    #          set obj_pos_offset=(0,0,-0.06) to target 6 cm below, at the bar.
+    obj_pos_offset: tuple = (0.0, 0.0, 0.0)
+
 
 SUPPORTED_ENVS: dict[str, EnvPreset] = {
 
@@ -169,42 +195,52 @@ SUPPORTED_ENVS: dict[str, EnvPreset] = {
         max_retries=4,
     ),
 
-    # ── Franka reach (no pick — just reaching to target pose) ────────────────
-    "reach-ik-rel": EnvPreset(
-        task_id="Isaac-Reach-Franka-IK-Rel-v0",
-        description="Franka: reach to target [IK-Rel] — reach only, no pick/lift",
-        pick_key="object",  # 'object' = goal marker in reach env
-        place_key=None,
-        approach_height=0.0,
-        hover_height=0.0,
-        grasp_height=-0.05,  # reach to / slightly below marker
-        lift_height=0.10,
-        grasp_settle_frames=30,
-        min_cube_lift_z=-0.01,  # low threshold; goal is reaching not lifting
-        descend_max_action=0.30,
-        kp_far=6.0, kp_near=3.0,
-        max_retries=3,
-    ),
-
     # ── Franka open drawer ────────────────────────────────────────────────────
-    # NOTE: The pick target is the drawer handle ('cabinet' scene entity).
-    # Grasp height and XY offsets differ significantly from cube pick.
-    # Auto-success rate with the generic controller will be low; treat as
-    # a starting point and tune heights for your specific cabinet asset.
+    # Approach: come from in front of the handle (robot side, -X direction).
+    # Grip:     horizontal gripper (target_pitch=π/2) to wrap around the handle bar.
+    # Pull:     retreat in -X direction to slide the drawer open.
+    # Success:  handle body moved ≥ 8 cm along retreat direction.
+    #
+    # The handle body name ("drawer_handle_top") is looked up at startup.
+    # If not found the controller falls back to cabinet root_pos_w, which
+    # gives a poor grasp target — check the actual body names with:
+    #   print(env.scene["cabinet"].data.body_names)
     "open-drawer": EnvPreset(
         task_id="Isaac-Open-Drawer-Franka-IK-Rel-v0",
-        description="Franka: open cabinet drawer [IK-Rel] — needs tuning",
+        description="Franka: open cabinet drawer [IK-Rel] — horizontal grasp & pull",
         pick_key="cabinet",
         place_key=None,
-        approach_height=0.05,
-        hover_height=0.02,
-        grasp_height=-0.02,
-        lift_height=0.0,     # don't lift; pull backward instead
-        grasp_settle_frames=50,
-        min_cube_lift_z=-0.05,
-        descend_max_action=0.20,
-        kp_far=4.0, kp_near=2.0,
-        max_retries=2,
+        # Directional params — approach & retreat both toward robot (-X).
+        approach_dir_world=(-1.0, 0.0, 0.0),
+        retreat_dir_world=(-1.0, 0.0, 0.0),
+        # pitch=π/2 (horizontal gripper).
+        # IMPORTANT: applied only during GRASP + LIFT.
+        # APPROACH/HOVER/OPEN_GRIP/DESCEND all use apply_pitch_roll=False so the
+        # arm reaches the handle position without pitch correction fighting X motion.
+        # Pitch is corrected during GRASP (lock_xy holds XY, wrist rotates freely).
+        target_pitch=1.5708,              # π/2 — horizontal gripper
+        handle_body="drawer_handle_top",  # articulation body; check body list at startup
+        # Z offset: 'drawer_handle_top' body origin is at the TOP of the handle
+        # mounting bracket, not the graspable bar centre.  Shift down to the bar.
+        # Tune this based on the body positions printed at startup.
+        obj_pos_offset=(0.0, 0.0, -0.05),   # 5 cm below body origin → handle bar
+        # Approach distances along approach_dir (-X = toward robot side).
+        approach_height=0.20,   # 20 cm in front of effective handle position
+        hover_height=0.06,      # 6 cm in front  (short travel in DESCEND)
+        grasp_height=0.01,      # stop 1 cm short so fingers slide around bar
+        lift_height=0.22,       # pull 22 cm back to open drawer
+        # Verification: handle moved ≥ 5 cm along retreat_dir
+        verify_min_pull=0.05,
+        min_cube_lift_z=-999.0, # unused when verify_min_pull > 0
+        # Timing: give DESCEND plenty of time — arm only needs to move ~5 cm in X.
+        grasp_settle_frames=70,
+        max_descend_frames=350,
+        max_lift_frames=200,
+        descend_max_action=0.25,
+        kp_far=5.0, kp_near=3.0,
+        xy_align_threshold=0.015,
+        z_align_threshold=0.03,
+        max_retries=3,
     ),
 }
 
@@ -692,10 +728,20 @@ class PickAndPlaceController:
         # Fixed targets set at transitions (prevent drifting / chasing)
         self.lift_target_world: Optional[torch.Tensor] = None
         self.grasp_lock_xy:     Optional[torch.Tensor] = None
-        self.obj_lock_pos:      Optional[torch.Tensor] = None  # cube XY locked at OPEN_GRIP exit
+        self.obj_lock_pos:      Optional[torch.Tensor] = None  # obj position locked at OPEN_GRIP exit
+        self.grasp_obj_pos:     Optional[torch.Tensor] = None  # obj position locked at GRASP→LIFT transition
         self.place_target:      Optional[torch.Tensor] = None  # basket or stack top
 
         self._prev_action = torch.zeros(7, device=device)
+
+        # Generalised approach/retreat direction vectors (unit vectors, world frame).
+        # For lift tasks both are +Z; for drawer both are -X (toward robot).
+        _ad = torch.tensor(preset.approach_dir_world, dtype=torch.float32, device=device)
+        self._approach_dir = _ad / _ad.norm()
+        _rd = torch.tensor(preset.retreat_dir_world, dtype=torch.float32, device=device)
+        self._retreat_dir  = _rd / _rd.norm()
+        # True when approach is primarily vertical (enables live-Z tracking in DESCEND)
+        self._approach_is_vertical = bool(abs(float(preset.approach_dir_world[2])) > 0.5)
 
     def set_place_target(self, target: torch.Tensor):
         """Set basket position or stack target (called externally per episode)."""
@@ -709,6 +755,7 @@ class PickAndPlaceController:
         self.lift_target_world = None
         self.grasp_lock_xy     = None
         self.obj_lock_pos      = None
+        self.grasp_obj_pos     = None
         self._prev_action = torch.zeros(7, device=self.device)
 
     # ── Internal helpers ──────────────────────────────────────────────────────
@@ -726,12 +773,16 @@ class PickAndPlaceController:
         return ee_pos + quat_rotate_point(ee_quat, self.body_offset)
 
     def _action(self, tcp_target, target_yaw, ee_pos, ee_quat,
-                grip=1.0, max_act=None, lock_xy=False):
+                grip=1.0, max_act=None, lock_xy=False, apply_pitch_roll=True):
         """
         Compute a 7-D IK-Rel action toward tcp_target.
 
-        lock_xy=True: zero out X/Y commands (used during GRASP to prevent
-                      the gripper from chasing a sliding cube).
+        lock_xy=True:         zero out X/Y commands (prevents gripper chasing sliding cube).
+        apply_pitch_roll=False: skip PITCH correction only (roll=π is always applied).
+                               Used during free-reach approach phases where a large pitch
+                               correction (e.g. π/2 for drawer) would fight position
+                               convergence.  Roll is ALWAYS corrected because disabling it
+                               allows the IK to collapse the arm into degenerate poses.
         """
         if max_act is None:
             max_act = self.p.max_action
@@ -750,13 +801,28 @@ class PickAndPlaceController:
             act[1] = torch.clamp(cmd[1], -max_act, max_act)
         act[2] = torch.clamp(cmd[2], -max_act, max_act)
 
-        # Keep gripper pointing straight down
+        # Orientation correction.
         roll, pitch = get_roll_pitch(ee_quat)
+
+        # ROLL (act[3]) — ALWAYS corrected to roll=π (180°).
+        # This is the single most important constraint: it keeps the arm in the
+        # stable "elbow-up, gripper non-flipped" configuration.  Disabling it
+        # (even temporarily) allows the IK solver to collapse the arm into a
+        # degenerate folded pose where the shoulder link pushes against objects.
         des_roll = torch.tensor(3.14159, device=self.device)
-        roll_err  = torch.atan2(torch.sin(des_roll - roll), torch.cos(des_roll - roll))
-        pitch_err = -pitch
-        act[3] = torch.clamp(roll_err  * 1.0, -max_act * 0.5, max_act * 0.5)
-        act[4] = torch.clamp(pitch_err * 1.0, -max_act * 0.5, max_act * 0.5)
+        roll_err = torch.atan2(torch.sin(des_roll - roll), torch.cos(des_roll - roll))
+        act[3] = torch.clamp(roll_err * 1.0, -max_act * 0.5, max_act * 0.5)
+
+        # PITCH (act[4]) — only corrected when apply_pitch_roll=True.
+        # During free-reach approach phases (APPROACH_XY, HOVER, OPEN_GRIP, and
+        # DESCEND for horizontal tasks) pitch correction is suppressed so the IK
+        # can freely choose the elbow angle needed to reach the target without
+        # the wrist rotation command fighting position convergence.
+        if apply_pitch_roll:
+            des_pitch = torch.tensor(self.p.target_pitch, device=self.device)
+            pitch_err = torch.atan2(torch.sin(des_pitch - pitch), torch.cos(des_pitch - pitch))
+            act[4] = torch.clamp(pitch_err * 1.0, -max_act * 0.5, max_act * 0.5)
+        # else: act[4] = 0  (pitch unconstrained; natural arm pitch during reach)
 
         cur_yaw = get_yaw(ee_quat)
         yaw_err = torch.atan2(torch.sin(target_yaw - cur_yaw),
@@ -788,6 +854,7 @@ class PickAndPlaceController:
         self.lift_target_world = None
         self.grasp_lock_xy     = None
         self.obj_lock_pos      = None
+        self.grasp_obj_pos     = None
         self._transition(self.APPROACH_XY)
         return False
 
@@ -816,17 +883,31 @@ class PickAndPlaceController:
         target_yaw = get_yaw(obj_quat)
         is_terminal = False
 
+        # Apply configured offset so all targets point to the actual grasp point,
+        # not the body origin (which may differ, e.g. drawer handle vs body top).
+        if not hasattr(self, '_obj_offset'):
+            self._obj_offset = torch.tensor(p.obj_pos_offset,
+                                            dtype=torch.float32, device=self.device)
+        obj_pos = obj_pos + self._obj_offset
+
         if self.debug_counter % 50 == 0:
             tcp = self._tcp(ee_pos, ee_quat)
+            _, pitch_dbg = get_roll_pitch(ee_quat)
             print(f"  [DBG] {self.phase} t={self.phase_timer} "
                   f"tcp=({tcp[0]:.3f},{tcp[1]:.3f},{tcp[2]:.3f}) "
-                  f"obj=({obj_pos[0]:.3f},{obj_pos[1]:.3f},{obj_pos[2]:.3f})")
+                  f"obj=({obj_pos[0]:.3f},{obj_pos[1]:.3f},{obj_pos[2]:.3f}) "
+                  f"pitch={pitch_dbg:.2f}")
 
         # ── APPROACH_XY ──────────────────────────────────────────────────────
+        # apply_pitch_roll=False: suppress PITCH correction only; roll=π is
+        # always maintained (prevents degenerate arm configs).
+        # For drawer (target_pitch=π/2) the pitch correction fights position
+        # convergence; let the IK settle the wrist naturally during reach.
+        # Pitch is corrected starting from GRASP when the arm is at the target.
         if self.phase == self.APPROACH_XY:
-            tgt = obj_pos.clone(); tgt[2] += p.approach_height
+            tgt = obj_pos + self._approach_dir * p.approach_height
             act, dxy, dz, dyaw = self._action(tgt, target_yaw, ee_pos, ee_quat,
-                                              grip=1.0)
+                                              grip=1.0, apply_pitch_roll=False)
             if (dxy**2 + dz**2)**0.5 < p.xy_align_threshold * 2 \
                     and dyaw < p.yaw_align_threshold:
                 self._transition(self.HOVER)
@@ -836,9 +917,9 @@ class PickAndPlaceController:
 
         # ── HOVER ─────────────────────────────────────────────────────────────
         elif self.phase == self.HOVER:
-            tgt = obj_pos.clone(); tgt[2] += p.hover_height
+            tgt = obj_pos + self._approach_dir * p.hover_height
             act, dxy, _, dyaw = self._action(tgt, target_yaw, ee_pos, ee_quat,
-                                             grip=1.0)
+                                             grip=1.0, apply_pitch_roll=False)
             if self.phase_timer > p.hover_settle_frames:
                 if dxy < p.xy_align_threshold and dyaw < p.yaw_align_threshold:
                     self._transition(self.OPEN_GRIP)
@@ -847,8 +928,9 @@ class PickAndPlaceController:
 
         # ── OPEN_GRIP ─────────────────────────────────────────────────────────
         elif self.phase == self.OPEN_GRIP:
-            tgt = obj_pos.clone(); tgt[2] += p.hover_height
-            act, *_ = self._action(tgt, target_yaw, ee_pos, ee_quat, grip=1.0)
+            tgt = obj_pos + self._approach_dir * p.hover_height
+            act, *_ = self._action(tgt, target_yaw, ee_pos, ee_quat, grip=1.0,
+                                   apply_pitch_roll=False)
             if self.phase_timer > 15:
                 # Snapshot cube XY right before descending.
                 # DESCEND will target this fixed XY — the gripper will not chase
@@ -866,19 +948,27 @@ class PickAndPlaceController:
         elif self.phase == self.DESCEND:
             if self.obj_lock_pos is None:
                 self.obj_lock_pos = obj_pos.clone()
-            tgt = self.obj_lock_pos.clone()
-            tgt[2] = obj_pos[2].item() + p.grasp_height  # live Z (let cube settle)
+            tgt = self.obj_lock_pos + self._approach_dir * p.grasp_height
+            if self._approach_is_vertical:
+                # Live-Z: let the cube settle to its true resting height before gripping
+                tgt[2] = obj_pos[2].item() + p.grasp_height
 
+            # For horizontal approaches (drawer): disable pitch/roll during DESCEND
+            # so the arm can freely reach the handle position without orientation
+            # fighting. Pitch is corrected during GRASP (lock_xy keeps position while
+            # wrist rotates). For vertical approaches (cube): keep correction active.
             act, dxy, dz, _ = self._action(tgt, target_yaw, ee_pos, ee_quat,
                                            grip=1.0,
-                                           max_act=p.descend_max_action)
+                                           max_act=p.descend_max_action,
+                                           apply_pitch_roll=self._approach_is_vertical)
 
             # How far has the cube drifted from where we planned to descend?
             cube_escape = torch.norm(obj_pos[:2] - self.obj_lock_pos[:2]).item()
 
             if self.phase_timer % 20 == 0:
+                _, pitch_now = get_roll_pitch(ee_quat)
                 print(f"  [DESCEND] dxy={dxy:.3f} dz={dz:.3f} "
-                      f"escape={cube_escape:.3f}")
+                      f"escape={cube_escape:.3f} pitch={pitch_now:.2f}")
 
             # Abort if cube has slid away (being pushed by previous contact)
             if cube_escape > 0.07 and self.phase_timer > 25:
@@ -887,6 +977,9 @@ class PickAndPlaceController:
                 if self._retry_or_fail():
                     return act.unsqueeze(0), self.phase, True
 
+            # Convergence: 3-D distance to grasp target below threshold.
+            # For vertical approach (cube): dxy+dz in XYZ.
+            # For horizontal approach (drawer): primarily dxy (X distance to handle).
             elif (dxy**2 + dz**2)**0.5 < p.z_align_threshold:
                 self.grasp_lock_xy = self._tcp(ee_pos, ee_quat)[:2].clone()
                 self._transition(self.GRASP)
@@ -898,7 +991,7 @@ class PickAndPlaceController:
         # ── GRASP ─────────────────────────────────────────────────────────────
         # XY is LOCKED at grasp_lock_xy: prevents forward sliding on contact.
         elif self.phase == self.GRASP:
-            tgt = obj_pos.clone(); tgt[2] += p.grasp_height
+            tgt = obj_pos + self._approach_dir * p.grasp_height
             if self.grasp_lock_xy is not None:
                 tgt[0] = self.grasp_lock_xy[0]
                 tgt[1] = self.grasp_lock_xy[1]
@@ -908,18 +1001,18 @@ class PickAndPlaceController:
                                    lock_xy=True)
             act[2] = torch.clamp(act[2], -0.08, 0.08)   # gentle Z only
             if self.phase_timer > p.grasp_settle_frames:
-                # Capture fixed lift target now (object still at table height)
-                self.lift_target_world = obj_pos.clone()
-                self.lift_target_world[2] += p.lift_height
+                # Snapshot object position at grasp time for verification later
+                self.grasp_obj_pos = obj_pos.clone()
+                # Fixed lift/pull target along the retreat direction
+                self.lift_target_world = obj_pos + self._retreat_dir * p.lift_height
                 self._transition(self.LIFT)
 
-        # ── LIFT ──────────────────────────────────────────────────────────────
+        # ── LIFT / PULL ───────────────────────────────────────────────────────
         # Uses a FIXED world target (set at GRASP → LIFT transition).
-        # No chasing of the moving lifted object.
+        # No chasing of the moving lifted/pulled object.
         elif self.phase == self.LIFT:
             if self.lift_target_world is None:
-                self.lift_target_world = obj_pos.clone()
-                self.lift_target_world[2] += p.lift_height
+                self.lift_target_world = obj_pos + self._retreat_dir * p.lift_height
             act, _, dz, _ = self._action(self.lift_target_world, target_yaw,
                                          ee_pos, ee_quat, grip=-1.0)
             if dz < 0.03 or self.phase_timer > p.max_lift_frames:
@@ -931,15 +1024,23 @@ class PickAndPlaceController:
             if self.lift_target_world is not None:
                 tgt = self.lift_target_world
             else:
-                tgt = obj_pos.clone()
-                tgt[2] += p.lift_height
+                tgt = obj_pos + self._retreat_dir * p.lift_height
             act, *_ = self._action(tgt, target_yaw, ee_pos, ee_quat, grip=-1.0)
 
             if self.phase_timer > p.verify_hold_frames:
-                cube_z = obj_pos[2].item()
-                print(f"  [VERIFY_LIFT] cube_z={cube_z:.3f} "
-                      f"threshold={p.min_cube_lift_z:.3f}")
-                if cube_z > p.min_cube_lift_z:
+                # Drawer / pull task: measure displacement along retreat direction
+                if p.verify_min_pull > 0.0 and self.grasp_obj_pos is not None:
+                    delta = obj_pos - self.grasp_obj_pos
+                    pull_dist = torch.dot(delta, self._retreat_dir).item()
+                    print(f"  [VERIFY_LIFT] pull_dist={pull_dist:.3f} "
+                          f"min={p.verify_min_pull:.3f}")
+                    verify_ok = pull_dist > p.verify_min_pull
+                else:
+                    cube_z = obj_pos[2].item()
+                    print(f"  [VERIFY_LIFT] cube_z={cube_z:.3f} "
+                          f"threshold={p.min_cube_lift_z:.3f}")
+                    verify_ok = cube_z > p.min_cube_lift_z
+                if verify_ok:
                     print(f"  GRASP OK!")
                     has_place = (self.use_basket or self.use_place) \
                                 and self.place_target is not None
@@ -1118,6 +1219,37 @@ def main():
     print(f"  EE body: {preset.ee_body} idx={ee_idx}")
     print(f"  Finger joint ids: {fj_ids}")
 
+    # Handle body for articulated pick targets (e.g. drawer handle).
+    # If found, body_pos_w is used for pick_pos instead of root_pos_w.
+    handle_body_idx: Optional[int] = None
+    if preset.handle_body or preset.pick_key == "cabinet":
+        _pick_entity = env.scene[preset.pick_key]
+        # Always print all body names + positions for articulated assets —
+        # critical for diagnosing which body corresponds to the grasp target.
+        try:
+            _bnames = _pick_entity.data.body_names
+            _bpos_w = _pick_entity.data.body_pos_w[0]  # env_0 bodies
+            print(f"  [{preset.pick_key}] articulation bodies:")
+            for _bi, _bn in enumerate(_bnames):
+                _bp = _bpos_w[_bi]
+                print(f"    [{_bi:2d}] '{_bn}': "
+                      f"({_bp[0]:.3f}, {_bp[1]:.3f}, {_bp[2]:.3f})")
+        except Exception as _e:
+            print(f"  (body list unavailable: {_e})")
+        if preset.handle_body:
+            try:
+                handle_body_idx = _pick_entity.find_bodies(preset.handle_body)[0][0]
+                _hp = _pick_entity.data.body_pos_w[0, handle_body_idx]
+                print(f"  Handle body: '{preset.handle_body}' idx={handle_body_idx} "
+                      f"pos=({_hp[0]:.3f},{_hp[1]:.3f},{_hp[2]:.3f})")
+                if preset.obj_pos_offset != (0.0, 0.0, 0.0):
+                    _eff = _hp + torch.tensor(preset.obj_pos_offset, device=env.device)
+                    print(f"  Effective grasp pos (after offset): "
+                          f"({_eff[0]:.3f},{_eff[1]:.3f},{_eff[2]:.3f})")
+            except Exception as _e:
+                print(f"  WARNING: handle body '{preset.handle_body}' not found: {_e}")
+                print(f"    Falling back to root_pos_w for pick position.")
+
     # Auto-detect the env's actual action dimension.
     # Our controller always outputs 7-D (IK-Rel format).
     # For envs that expect 8-D (IK-Abs, joint-pos), we zero-pad at step time.
@@ -1281,9 +1413,14 @@ def main():
             print("  Human override → MANUAL")
             state = "MANUAL"
 
-        # Scene state
-        pick_pos  = env.scene[preset.pick_key].data.root_pos_w[0]
-        pick_quat = env.scene[preset.pick_key].data.root_quat_w[0]
+        # Scene state — use handle body position for articulated pick targets
+        if handle_body_idx is not None:
+            _pe = env.scene[preset.pick_key]
+            pick_pos  = _pe.data.body_pos_w[0, handle_body_idx]
+            pick_quat = _pe.data.body_quat_w[0, handle_body_idx]
+        else:
+            pick_pos  = env.scene[preset.pick_key].data.root_pos_w[0]
+            pick_quat = env.scene[preset.pick_key].data.root_quat_w[0]
         ee_pos    = robot.data.body_pos_w[0, ee_idx]
         ee_quat   = robot.data.body_quat_w[0, ee_idx]
 
@@ -1399,8 +1536,7 @@ if __name__ == "__main__":
 
 ./isaaclab.sh -p isaac_auto_collector_v4.py --enable_cameras --autorun --env lift-ik-rel   # cube lift ✅
 ./isaaclab.sh -p isaac_auto_collector_v4.py --enable_cameras --autorun --env stack-ik-rel  # cube stack ✅
-./isaaclab.sh -p isaac_auto_collector_v4.py --enable_cameras --autorun --env reach-ik-rel  # reach ✅
-./isaaclab.sh -p isaac_auto_collector_v4.py --enable_cameras --autorun --env open-drawer   # drawer (tune heights) ✅
+./isaaclab.sh -p isaac_auto_collector_v4.py --enable_cameras --autorun --env open-drawer   # drawer horizontal grasp & pull
 
 
 """
