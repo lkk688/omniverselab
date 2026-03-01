@@ -20,6 +20,13 @@ ZMQ_PORT = 8213
 # ==========================================
 # 🤖 物理机械臂控制器 (带硬件级安全护盾)
 # ==========================================
+import json
+import time
+import math
+import numpy as np
+import serial
+import requests
+
 class RoArmController:
     def __init__(self, mode="serial", serial_port='/dev/cu.usbserial-0001', wifi_ip="192.168.1.50"):
         self.mode = mode.lower()
@@ -27,88 +34,96 @@ class RoArmController:
         self.wifi_ip = wifi_ip
         self.ser = None
         self.is_emergency_stopped = False
-        self.target_pose = {"x": 200, "y": 0, "z": 150, "t": 0} 
-        self.stall_counter = 0
-        self.STALL_THRESHOLD = 30.0 
-        self.STALL_MAX_FRAMES = 5   
-
+        
+        # 官方默认的复位中心坐标 (x:312, z:230)
+        self.target_pose = {"x": 312.0, "y": 0.0, "z": 230.0, "t": 3.14} 
+        
+        # 发送节流阀，防止手柄 50Hz 的信号冲爆串口
+        self.last_send_time = time.time()
+        self.SEND_INTERVAL = 0.05  # 限制最高 20Hz 
+        
         if self.mode == "serial":
             try:
                 self.ser = serial.Serial(self.serial_port, 115200, timeout=0.05)
                 print(f"🟢 [RoArm] 串口已连接: {self.serial_port}")
+                self.reset_home() 
             except Exception as e:
-                print(f"❌ [RoArm] 串口失败: {e}")
-        elif self.mode == "wifi":
-            try:
-                requests.get(f"http://{self.wifi_ip}/", timeout=1.0)
-                print(f"🟢 [RoArm] Wi-Fi 已连接: {self.wifi_ip}")
-            except Exception as e:
-                print(f"❌ [RoArm] Wi-Fi 失败: {e}")
+                print(f"❌ [RoArm] 串口连接失败: {e}")
 
     def send_cmd(self, cmd_dict):
         if self.is_emergency_stopped and cmd_dict.get("T") != 210: return 
+        
+        # 组装带换行符的 JSON 字符串
+        cmd_str = json.dumps(cmd_dict) + "\r\n"
+        
         if self.mode == "serial" and self.ser:
-            try: self.ser.write((json.dumps(cmd_dict) + "\n").encode('utf-8'))
-            except: pass
-        elif self.mode == "wifi":
-            try: requests.get(f"http://{self.wifi_ip}/js?json={json.dumps(cmd_dict)}", timeout=0.05)
-            except: pass
+            try: 
+                self.ser.write(cmd_str.encode('utf-8'))
+            except Exception as e: 
+                print(f"串口发送异常: {e}")
 
-    def torque_off(self):
-        self.send_cmd({"T": 210, "cmd": 0})
-        print("🟢 [RoArm] 释放电机力矩")
-
-    def torque_on(self):
-        self.send_cmd({"T": 210, "cmd": 1})
-        self.is_emergency_stopped = False
-        print("🔴 [RoArm] 锁定电机力矩")
-
-    def emergency_stop(self):
-        if not self.is_emergency_stopped:
-            print("\n🚨 [RoArm] 触发急停！已切断力矩！")
-            self.torque_off()
-            self.is_emergency_stopped = True
-
+    def torque_off(self): self.send_cmd({"T": 210, "cmd": 0})
+    def torque_on(self): self.send_cmd({"T": 210, "cmd": 1})
+    
     def reset_home(self):
-        if self.is_emergency_stopped: self.torque_on() 
-        print("🏠 [RoArm] 安全复位中...")
-        self.target_pose = {"x": 200, "y": 0, "z": 150, "t": 0}
-        self.send_cmd({"T": 101, "x": 200, "y": 0, "z": 150, "t": 0, "spd": 20}) 
+        print("🏠 [RoArm] 执行开机自检与复位...")
+        self.send_cmd({"T": 114, "led": 0})
+        time.sleep(0.5)
+        self.send_cmd({"T": 114, "led": 255})
+        time.sleep(0.5)
+        
+        # 硬件原生复位
+        self.send_cmd({"T": 100})
+        time.sleep(1.5)
+        
+        # 将内部坐标同步到微雪官方复位点
+        self.target_pose = {"x": 312.0, "y": 0.0, "z": 230.0, "t": 3.14}
 
     def move_ik_safe(self, dx, dy, dz, dt, max_step=10.0):
         if self.is_emergency_stopped: return
-        dx = np.clip(dx, -max_step, max_step)
-        dy = np.clip(dy, -max_step, max_step)
-        dz = np.clip(dz, -max_step, max_step)
-        dt = np.clip(dt, -max_step, max_step)
-        self.target_pose["x"] += dx
-        self.target_pose["y"] += dy
-        self.target_pose["z"] += dz
-        self.target_pose["t"] += dt
-        self.send_cmd({"T": 101, "x": self.target_pose["x"], "y": self.target_pose["y"], "z": self.target_pose["z"], "t": self.target_pose["t"], "spd": 0})
+        
+        curr_time = time.time()
+        if curr_time - self.last_send_time < self.SEND_INTERVAL:
+            return
+        
+        # 死区过滤
+        if abs(dx) < 0.1 and abs(dy) < 0.1 and abs(dz) < 0.1 and abs(dt) < 0.1:
+            return
+            
+        self.last_send_time = curr_time
+        
+        dx = float(np.clip(dx, -max_step, max_step))
+        dy = float(np.clip(dy, -max_step, max_step))
+        dz = float(np.clip(dz, -max_step, max_step))
+        dt = float(np.clip(dt, -0.5, 0.5))
+        
+        # 更新坐标，并框定在物理安全边界内
+        new_x = np.clip(self.target_pose["x"] + dx, 150.0, 350.0)
+        new_y = np.clip(self.target_pose["y"] + dy, -250.0, 250.0)
+        new_z = np.clip(self.target_pose["z"] + dz, 100.0, 300.0)  
+        new_t = np.clip(self.target_pose["t"] + dt, 1.08, 5.20)
 
-    def get_pose(self):
-        if self.mode == "serial" and self.ser:
-            self.send_cmd({"T": 105})
-            try:
-                line = self.ser.readline().decode('utf-8').strip()
-                if line.startswith('{') and line.endswith('}'): return json.loads(line)
-            except: pass
-        return None
+        self.target_pose["x"] = float(new_x)
+        self.target_pose["y"] = float(new_y)
+        self.target_pose["z"] = float(new_z)
+        self.target_pose["t"] = float(new_t)
 
-    def check_stall(self):
-        if self.is_emergency_stopped: return
-        real_pose = self.get_pose()
-        if real_pose and 'x' in real_pose:
-            err = np.sqrt((self.target_pose["x"] - real_pose["x"])**2 + (self.target_pose["y"] - real_pose["y"])**2 + (self.target_pose["z"] - real_pose["z"])**2)
-            if err > self.STALL_THRESHOLD:
-                self.stall_counter += 1
-                if self.stall_counter > self.STALL_MAX_FRAMES:
-                    self.emergency_stop()
-            else: self.stall_counter = 0
+        # 💡 核心修复：使用 1041 并且彻底移除 spd 参数！
+        cmd = {
+            "T": 1041, 
+            "x": round(self.target_pose["x"], 2), 
+            "y": round(self.target_pose["y"], 2), 
+            "z": round(self.target_pose["z"], 2), 
+            "t": round(self.target_pose["t"], 2)
+        }
+        self.send_cmd(cmd)
 
     def set_gripper(self, val):
-        if not self.is_emergency_stopped: self.send_cmd({"T": 104, "b": val})
+        if not self.is_emergency_stopped: 
+            # 夹爪角度
+            angle = 135 if val > 128 else 255
+            self.send_cmd({"T": 121, "joint": 4, "angle": angle, "spd": 200})
+
 
 # ==========================================
 # 🎮 控制中枢与现代 GUI
@@ -234,14 +249,28 @@ class TeleopHub:
                         elif curr_btns[0] and not self.last_btns[0]: self.send_command("SAVE")       # ❌
                         elif curr_btns[1] and not self.last_btns[1]: self.send_command("RESET")      # ○
                     self.last_btns = curr_btns
+                    
+                    # 取出当前夹爪应该处于的状态
+                    curr_gripper_state = 255 if action[6] > 0 else 0
 
                 # 3. 物理机械臂控制
                 if self.output_dest == "roarm" and self.roarm:
                     dx = (action[0] / 0.05) * 2.0 * self.speed_scale
                     dy = (action[1] / 0.05) * 2.0 * self.speed_scale
                     dz = (action[2] / 0.05) * 2.0 * self.speed_scale
-                    self.roarm.move_ik_safe(dx, dy, dz, action[4]*2, max_step=15.0)
-                    self.roarm.set_gripper(255 if action[6] > 0 else 0)
+                    dt = action[4] * 2
+                    
+                    # 死区/变化量过滤
+                    if abs(dx) > 0.1 or abs(dy) > 0.1 or abs(dz) > 0.1 or abs(dt) > 0.1:
+                        self.roarm.move_ik_safe(dx, dy, dz, dt, max_step=15.0)
+                    
+                    # 状态改变时才发送夹爪指令
+                    if not hasattr(self, 'last_gripper_state'): 
+                        self.last_gripper_state = -1 # 强制第一次发送
+                    
+                    if curr_gripper_state != self.last_gripper_state:
+                        self.roarm.set_gripper(curr_gripper_state)
+                        self.last_gripper_state = curr_gripper_state
 
                 self.draw_ui(action)
                 clock.tick(50)
@@ -314,9 +343,9 @@ if __name__ == "__main__":
     parser.add_argument("--input", choices=["ps5", "roarm"], required=True)
     parser.add_argument("--output", choices=["isaac", "roarm"], required=True)
     parser.add_argument("--isaac_mode", choices=["manual", "shared"], default="shared")
-    parser.add_argument("--roarm_mode", choices=["serial", "wifi"], default="serial")
-    parser.add_argument("--roarm_ip", default="192.168.1.50")
-    parser.add_argument("--roarm_port", default="/dev/cu.usbserial-0001")
+    parser.add_argument("--roarm_mode", choices=["serial", "wifi"], default="wifi")
+    parser.add_argument("--roarm_ip", default="192.168.5.79")
+    parser.add_argument("--roarm_port", default="/dev/cu.usbserial-210")
     
     args = parser.parse_args()
     hub = TeleopHub(args.input, args.output, args.roarm_mode, args.roarm_port, args.roarm_ip, args.isaac_mode)
