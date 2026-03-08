@@ -3,7 +3,7 @@
 
 ## Part 1: Codebase Architecture
 
-The Waveshare `RoArm-M2_example` is built on a modular header-file architecture. Instead of writing 2,000 lines of code in one `.ino` file, the logic is split into specific `.h` files.
+The Waveshare `RoArm-M2_example` (https://github.com/waveshareteam/roarm_m2/tree/main) is built on a modular header-file architecture. Instead of writing 2,000 lines of code in one `.ino` file, the logic is split into specific `.h` files.
 
 Here is the anatomy of the firmware:
 
