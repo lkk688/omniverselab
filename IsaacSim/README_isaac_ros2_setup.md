@@ -177,6 +177,29 @@ Jetson Platform: ✅ PASS
 Overall: 7/7 checks passed
 ```
 
+## New
+
+```bash
+# On the RTX5090 box:
+conda activate isaac_lerobot
+cd /Developer/IsaacLab
+cp /Developer/omniverselab/IsaacSim/isaac_auto_collector_v6.py .
+cp /Developer/omniverselab/IsaacSim/isaac_multicam_addons.py .
+
+# First — smoke test that the cameras actually got registered into the scene
+./isaaclab.sh -p isaac_auto_collector_v6.py --enable_cameras \
+    --env lift-ik-rel --list_cams
+# Should print env.scene.sensors keys including top_camera, cam_left,
+# cam_right, cam_front, cam_wrist — then exit.
+
+# If that looks right, kick off real collection (~50 demos, ~10 min)
+./isaaclab.sh -p isaac_auto_collector_v6.py --enable_cameras --autorun \
+    --env lift-ik-rel --max_demos 50 \
+    --cams top,left,right,front,wrist --cam_hw 480,640 \
+    --save_dir logs/demos_multicam_lift
+
+```
+
 ## License
 
 This script is provided as-is for educational and development purposes.

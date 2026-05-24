@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mylerobot"
+version = "0.0.1"
+description = "External agentic + multimodal-fusion extensions to lerobot ACT. Decoupled so upstream lerobot updates have minimal impact."
+requires-python = ">=3.10"
+authors = [{ name = "Kaikai Liu" }]
+dependencies = [
+    # lerobot is intentionally NOT listed here; we depend on the editable install
+    # at /fs/atipa/data/rnd-liu/aiprojects/lerobot pinned to commit
+    #   8194897994be649cc85405fe54eb9ede751886b1
+    # (run `pip install -e /fs/atipa/data/rnd-liu/aiprojects/lerobot` before installing this package).
+    "torch>=2.1",
+    "einops",
+    "numpy",
+]
+
+[project.optional-dependencies]
+text = ["transformers>=4.40"]
+dev = ["pytest>=7", "pytest-xdist"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["mylerobot*"]
+exclude = ["tests*", "scripts*", "configs*", "notebooks*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
