@@ -41,7 +41,7 @@ def test_quat_wxyz_to_R_90deg_z():
 
 def test_look_at_quat_axis_aligned_z_down():
     # Camera at (0, 0, 2) looking at origin → cam +Z = -world_Z.
-    x, y, z, w = mc._look_at_quat_ros((0.0, 0.0, 2.0), (0.0, 0.0, 0.0))
+    w, x, y, z = mc._look_at_quat_ros((0.0, 0.0, 2.0), (0.0, 0.0, 0.0))
     # rebuild rotation, check fwd axis lines up with -Z world
     R = mc._quat_wxyz_to_R(w, x, y, z)
     cam_fwd_in_world = R[:, 2]
@@ -50,7 +50,7 @@ def test_look_at_quat_axis_aligned_z_down():
 
 def test_look_at_quat_horizontal():
     # Camera at (1, 0, 0) looking at origin → cam +Z = -X world
-    x, y, z, w = mc._look_at_quat_ros((1.0, 0.0, 0.0), (0.0, 0.0, 0.0))
+    w, x, y, z = mc._look_at_quat_ros((1.0, 0.0, 0.0), (0.0, 0.0, 0.0))
     R = mc._quat_wxyz_to_R(w, x, y, z)
     np.testing.assert_allclose(R[:, 2], [-1.0, 0.0, 0.0], atol=1e-9)
     # cam +Y (down) should align with -world_Z (camera held upright)
@@ -99,8 +99,8 @@ def test_intrinsic_from_pinhole_known():
 # ---------------------------------------------------------------------------
 def test_extra_cam_defs_have_rotations():
     for name, d in mc.EXTRA_CAMERA_DEFS.items():
-        assert "rot_xyzw_ros" in d, f"{name} missing rot_xyzw_ros"
-        x, y, z, w = d["rot_xyzw_ros"]
+        assert "rot_wxyz_ros" in d, f"{name} missing rot_wxyz_ros"
+        w, x, y, z = d["rot_wxyz_ros"]
         # quaternion is unit
         assert (x * x + y * y + z * z + w * w) == pytest.approx(1.0, abs=1e-6)
 

@@ -247,6 +247,8 @@ parser.add_argument("--max_demos", type=int, default=50)
 parser.add_argument("--save_dir", type=str, default="logs/demos")
 parser.add_argument("--autorun", action="store_true", default=False,
                     help="Auto-start CONTINUOUS collection immediately")
+parser.add_argument("--exit_on_done", action="store_true", default=False,
+                    help="Exit Isaac Sim when CONTINUOUS reaches --max_demos")
 parser.add_argument("--use_basket", action="store_true", default=False,
                     help="Add a basket target; robot must drop cube in it")
 parser.add_argument("--randomize_env", action="store_true", default=True,
@@ -1178,7 +1180,7 @@ def main():
     print(f"\n  Environment: {preset.task_id}")
     print(f"  Preset:      {args_cli.env} — {preset.description}\n")
 
-    env_cfg = parse_env_cfg(preset.task_id)
+    env_cfg = parse_env_cfg(preset.task_id, device=args_cli.device)
     env_cfg.scene.num_envs = 1
     env_cfg.episode_length_s = 3600.0
 
@@ -1440,6 +1442,8 @@ def main():
                 print(f"  Target {max_demos} reached! "
                       f"Rate: {saver.success_count}/"
                       f"{saver.success_count + saver.fail_count}")
+                if args_cli.exit_on_done:
+                    break
                 state = "MANUAL"
             else:
                 auto_act, _, done = controller.compute(
@@ -1454,6 +1458,12 @@ def main():
                         saver.save(success=True,  episode_info=ep)
                     else:
                         saver.save(success=False, episode_info=ep)
+                    if saver.total_demos >= max_demos:
+                        print(f"  Target {max_demos} reached! "
+                              f"Rate: {saver.success_count}/"
+                              f"{saver.success_count + saver.fail_count}")
+                        if args_cli.exit_on_done:
+                            break
                     start_new_episode()
                     time.sleep(0.1)
                     continue
@@ -1491,11 +1501,11 @@ if __name__ == "__main__":
     main()
 
 """
-(isaac_lerobot) lkk@rtx5090:/Developer/IsaacLab$ cp /Developer/omniverselab/IsaacSim/isaac_auto_collector_v4.py /Developer/IsaacLab/
+(isaac_lerobot) lkk@rtx5090:/Developer/IsaacLab$ cp /Developer/omniverselab/IsaacSim/isaac_auto_collector_v5.py /Developer/IsaacLab/
 
-./isaaclab.sh -p isaac_auto_collector_v4.py --enable_cameras --autorun --env lift-ik-rel   # cube lift ✅
-./isaaclab.sh -p isaac_auto_collector_v4.py --enable_cameras --autorun --env stack-ik-rel  # cube stack ✅
-./isaaclab.sh -p isaac_auto_collector_v4.py --enable_cameras --autorun --env open-drawer   # drawer horizontal grasp & pull
+./isaaclab.sh -p isaac_auto_collector_v5.py --device cuda:1 --enable_cameras --autorun --env lift-ik-rel   # cube lift ✅
+./isaaclab.sh -p isaac_auto_collector_v5.py --device cuda:1 --enable_cameras --autorun --env stack-ik-rel  # cube stack ✅
+./isaaclab.sh -p isaac_auto_collector_v5.py --device cuda:1 --enable_cameras --autorun --env open-drawer   # drawer horizontal grasp & pull
 
 
 """

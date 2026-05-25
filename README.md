@@ -326,6 +326,54 @@ simulation control
 ./isaaclab.sh -p scripts/tools/record_demos.py --task Isaac-Lift-Cube-Franka-IK-Rel-v0 --teleop_device gamepad --num_demos 100 --livestream 2
 ```
 
+dual-GPU workstation notes
+```bash
+# Current local GPU map:
+#   GPU 0 = NVIDIA RTX PRO 6000 Blackwell Workstation Edition (busy / reserve)
+#   GPU 1 = NVIDIA GeForce RTX 5090 (use for Isaac Lab / Isaac Sim collection)
+nvidia-smi --query-gpu=index,name,memory.used,memory.total --format=csv
+
+# Recommended: run IsaacLab on the physical RTX 5090 at cuda:1.
+# isaac_auto_collector_v5.py / v6.py forward --device into parse_env_cfg, so
+# AppLauncher, PhysX/rendering, and environment tensors use the same GPU.
+(isaac_lerobot) lkk@rtx5090:/Developer/IsaacLab$ cp /Developer/omniverselab/IsaacSim/isaac_auto_collector_v5.py /Developer/IsaacLab/
+
+./isaaclab.sh -p isaac_auto_collector_v5.py --device cuda:1 --enable_cameras --autorun --env lift-ik-rel   # cube lift
+./isaaclab.sh -p isaac_auto_collector_v5.py --device cuda:1 --enable_cameras --autorun --env stack-ik-rel  # cube stack
+
+# V6 multi-camera recorder:
+(isaac_lerobot) lkk@rtx5090:/Developer/IsaacLab$ cp /Developer/omniverselab/IsaacSim/isaac_auto_collector_v6.py /Developer/IsaacLab/
+(isaac_lerobot) lkk@rtx5090:/Developer/IsaacLab$ cp /Developer/omniverselab/IsaacSim/isaac_multicam_addons.py /Developer/IsaacLab/
+
+# 2026-05-24 note: isaac_multicam_addons.py uses IsaacLab's wxyz quaternion
+# order for camera offsets. Use the fixed path below for training data.
+# The older logs/demos_multicam_lift run is structurally valid but had blank
+# top/right views before this fix.
+./isaaclab.sh -p isaac_auto_collector_v6.py --device cuda:1 --enable_cameras --list_cams \
+  --env lift-ik-rel --cams top,left,right,front,wrist --cam_hw 64,64
+
+./isaaclab.sh -p isaac_auto_collector_v6.py --device cuda:1 --enable_cameras --autorun \
+  --env lift-ik-rel --max_demos 50 --exit_on_done \
+  --cams top,left,right,front,wrist --cam_hw 480,640 \
+  --save_dir logs/demos_multicam_lift_fixed
+
+# Convert V6 HDF5 episodes to a native LeRobotDataset for ACT/pi0-style training:
+PYTHONPATH=/Developer/lerobot/src python /Developer/omniverselab/IsaacSim/convert_isaac_hdf5_to_lerobot.py \
+  logs/demos_multicam_lift_fixed \
+  --repo_id local/isaac_multicam_lift_fixed \
+  --root logs/lerobot_multicam_lift_fixed \
+  --task "lift the cube" \
+  --image_dtype video \
+  --overwrite
+
+# Manual demo recording can use the same GPU flag:
+./isaaclab.sh -p scripts/tools/record_demos.py --device cuda:1 --task Isaac-Lift-Cube-Franka-IK-Rel-v0 --teleop_device keyboard --num_demos 1
+
+# Alternative hard CUDA mask: physical GPU 1 becomes logical cuda:0.
+# Use this only if you intentionally want to hide the Pro 6000 from CUDA.
+CUDA_VISIBLE_DEVICES=1 ./isaaclab.sh -p isaac_auto_collector_v5.py --device cuda:0 --enable_cameras --autorun --env lift-ik-rel
+```
+
 ```bash
 # 1. 强制 MuJoCo 使用 EGL 渲染后端
 export MUJOCO_GL=egl

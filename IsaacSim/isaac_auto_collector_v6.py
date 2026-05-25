@@ -11,7 +11,9 @@ Diff vs V5:
   3. After parse_env_cfg(), injects additional camera sensors into the scene.
   4. Replaces single-camera LeRobotDemoSaver with multi-camera LeRobotMultiCamSaver.
   5. Per-step capture loops over all selected cameras and records
-     pose + RGB + extrinsic (world->cam OpenCV) per frame.
+     obs_t/images_t/action_t plus pose + RGB + extrinsic per frame.
+  6. Disables Fabric for this single-env camera recorder so camera readback
+     works on a non-default CUDA device such as cuda:1.
 
 H5 output layout (V5-compatible for `obs/images/top` + `obs/state` + `actions`):
 
@@ -29,7 +31,7 @@ Run (on RTX5090, in the isaac_lerobot conda env):
     cd /Developer/IsaacLab
     cp /Developer/omniverselab/IsaacSim/isaac_auto_collector_v6.py .
     cp /Developer/omniverselab/IsaacSim/isaac_multicam_addons.py .
-    ./isaaclab.sh -p isaac_auto_collector_v6.py --enable_cameras --autorun \
+    ./isaaclab.sh -p isaac_auto_collector_v6.py --device cuda:1 --enable_cameras --autorun \
         --env lift-ik-rel --max_demos 50 \
         --cams top,left,right,front,wrist --cam_hw 480,640 \
         --save_dir logs/demos_multicam_lift
@@ -235,6 +237,8 @@ parser.add_argument("--max_demos", type=int, default=50)
 parser.add_argument("--save_dir", type=str, default="logs/demos")
 parser.add_argument("--autorun", action="store_true", default=False,
                     help="Auto-start CONTINUOUS collection immediately")
+parser.add_argument("--exit_on_done", action="store_true", default=False,
+                    help="Exit Isaac Sim when CONTINUOUS reaches --max_demos")
 parser.add_argument("--use_basket", action="store_true", default=False,
                     help="Add a basket target; robot must drop cube in it")
 parser.add_argument("--randomize_env", action="store_true", default=True,
@@ -1176,7 +1180,7 @@ def main():
     print(f"\n  Environment: {preset.task_id}")
     print(f"  Preset:      {args_cli.env} — {preset.description}\n")
 
-    env_cfg = parse_env_cfg(preset.task_id)
+    env_cfg = parse_env_cfg(preset.task_id, device=args_cli.device, use_fabric=False)
     env_cfg.scene.num_envs = 1
     env_cfg.episode_length_s = 3600.0
 
@@ -1224,12 +1228,22 @@ def main():
     controller = PickAndPlaceController(
         preset=preset, device=env.device,
         use_basket=use_basket, use_place=use_place)
-        # >>> multicam: --list_cams (early exit) and switch to multi-cam saver
+    # >>> multicam: --list_cams (early exit) and switch to multi-cam saver
     if getattr(args_cli, 'list_cams', False):
         print('\n=== env.scene.sensors keys ===')
         if hasattr(env.scene, 'sensors'):
             for k in env.scene.sensors:
                 print(f'  {k}')
+        env.reset()
+        env.sim.render()
+        cam_records = mc.capture_all_cams(env, cam_names)
+        print('\n=== capture_all_cams smoke ===')
+        for c in cam_names:
+            rec = cam_records.get(c)
+            if rec is None:
+                print(f'  {c}: MISSING')
+            else:
+                print(f'  {c}: rgb{tuple(rec["rgb"].shape)}')
         env.close(); simulation_app.close(); return
     _cam_intrinsics = {
         c: mc.intrinsic_from_pinhole_cfg(
@@ -1459,6 +1473,8 @@ def main():
                 print(f"  Target {max_demos} reached! "
                       f"Rate: {saver.success_count}/"
                       f"{saver.success_count + saver.fail_count}")
+                if args_cli.exit_on_done:
+                    break
                 state = "MANUAL"
             else:
                 auto_act, _, done = controller.compute(
@@ -1473,6 +1489,12 @@ def main():
                         saver.save(success=True,  episode_info=ep)
                     else:
                         saver.save(success=False, episode_info=ep)
+                    if saver.total_demos >= max_demos:
+                        print(f"  Target {max_demos} reached! "
+                              f"Rate: {saver.success_count}/"
+                              f"{saver.success_count + saver.fail_count}")
+                        if args_cli.exit_on_done:
+                            break
                     start_new_episode()
                     time.sleep(0.1)
                     continue
@@ -1485,12 +1507,14 @@ def main():
             padded[0, :final_action.shape[1]] = final_action[0]
             final_action = padded
 
-        # Step
-        obs, rewards, dones, _, _ = env.step(final_action)
+        # >>> multicam: record obs_t/images_t paired with action_t before stepping
         robot_state = robot.data.joint_pos[0]
-                # >>> multicam: capture all selected cameras per step
         cam_records = mc.capture_all_cams(env, cam_names)
         saver.record_step(robot_state, final_action[0], cam_records)
+
+        # Step action_t to advance the simulation
+        obs, rewards, dones, _, _ = env.step(final_action)
+
         if state == "SAVE_TRIGGERED":
             saver.save(success=True, episode_info={"mode": "manual", **episode_meta})
             state = "RESET_TRIGGERED"
@@ -1508,11 +1532,19 @@ if __name__ == "__main__":
     main()
 
 """
-(isaac_lerobot) lkk@rtx5090:/Developer/IsaacLab$ cp /Developer/omniverselab/IsaacSim/isaac_auto_collector_v4.py /Developer/IsaacLab/
+(isaac_lerobot) lkk@rtx5090:/Developer/IsaacLab$ cp /Developer/omniverselab/IsaacSim/isaac_auto_collector_v6.py /Developer/IsaacLab/
+(isaac_lerobot) lkk@rtx5090:/Developer/IsaacLab$ cp /Developer/omniverselab/IsaacSim/isaac_multicam_addons.py /Developer/IsaacLab/
 
-./isaaclab.sh -p isaac_auto_collector_v4.py --enable_cameras --autorun --env lift-ik-rel   # cube lift ✅
-./isaaclab.sh -p isaac_auto_collector_v4.py --enable_cameras --autorun --env stack-ik-rel  # cube stack ✅
-./isaaclab.sh -p isaac_auto_collector_v4.py --enable_cameras --autorun --env open-drawer   # drawer horizontal grasp & pull
+./isaaclab.sh -p isaac_auto_collector_v6.py --device cuda:1 --enable_cameras --list_cams \
+    --env lift-ik-rel --cams top,left,right,front,wrist --cam_hw 64,64
 
+./isaaclab.sh -p isaac_auto_collector_v6.py --device cuda:1 --enable_cameras --autorun \
+    --env lift-ik-rel --max_demos 50 \
+    --cams top,left,right,front,wrist --cam_hw 480,640 \
+    --save_dir logs/demos_multicam_lift
 
+./isaaclab.sh -p isaac_auto_collector_v6.py --device cuda:1 --enable_cameras --autorun \
+    --env stack-ik-rel --max_demos 50 \
+    --cams top,left,right,front,wrist --cam_hw 480,640 \
+    --save_dir logs/demos_multicam_stack
 """

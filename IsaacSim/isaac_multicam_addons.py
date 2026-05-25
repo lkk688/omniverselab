@@ -46,7 +46,8 @@ import torch
 WORKSPACE_CENTRE = (0.5, 0.0, 0.05)
 
 EXTRA_CAMERA_DEFS: Dict[str, Dict[str, Any]] = {
-    # name : { "pos": (x,y,z), "rot_xyzw_ros": filled by _resolve_extrinsics }
+    # name : { "pos": (x,y,z), "rot_wxyz_ros": filled by _resolve_extrinsics }
+    "top":   {"pos": (0.5,  0.0, 1.25)},
     "left":  {"pos": (0.4,  0.6, 0.4)},
     "right": {"pos": (0.4, -0.6, 0.4)},
     "front": {"pos": (1.1,  0.0, 0.3)},
@@ -54,7 +55,7 @@ EXTRA_CAMERA_DEFS: Dict[str, Dict[str, Any]] = {
 
 
 def _look_at_quat_ros(cam_pos, target):
-    """ROS-convention quaternion (xyzw) that aims a camera at `target`.
+    """ROS-convention quaternion (wxyz) that aims a camera at `target`.
 
     Cam frame: +X right, +Y down, +Z forward. World up assumed +Z.
     """
@@ -71,7 +72,7 @@ def _look_at_quat_ros(cam_pos, target):
         right /= rn
     down = np.cross(fwd, right)
     R = np.stack([right, down, fwd], axis=1)  # cam-frame axes expressed in world
-    # R -> quaternion (xyzw, ROS)
+    # R -> quaternion (wxyz, ROS/IsaacLab OffsetCfg order)
     t = R.trace()
     if t > 0:
         s = 0.5 / np.sqrt(t + 1.0); w = 0.25 / s
@@ -96,13 +97,13 @@ def _look_at_quat_ros(cam_pos, target):
         x = (R[0, 2] + R[2, 0]) / s
         y = (R[1, 2] + R[2, 1]) / s
         z = 0.25 * s
-    return (float(x), float(y), float(z), float(w))  # ROS xyzw
+    return (float(w), float(x), float(y), float(z))
 
 
 def _resolve_extrinsics():
     for _name, _def in EXTRA_CAMERA_DEFS.items():
-        if "rot_xyzw_ros" not in _def:
-            _def["rot_xyzw_ros"] = _look_at_quat_ros(_def["pos"], WORKSPACE_CENTRE)
+        if "rot_wxyz_ros" not in _def:
+            _def["rot_wxyz_ros"] = _look_at_quat_ros(_def["pos"], WORKSPACE_CENTRE)
 
 
 _resolve_extrinsics()
@@ -115,10 +116,9 @@ def add_multicam_to_scene_cfg(env_cfg, cam_names: List[str], height: int, width:
                               robot_path_suffix: str = "Robot/panda_hand"):
     """Mutate env_cfg.scene to add fixed-pose + wrist cameras.
 
-    Cameras get `cam_<name>` attrs on the scene cfg (except `top`, which
-    we assume the task's default scene cfg already provides as
-    `top_camera`). After env init, the new sensors appear under
-    `env.scene.sensors["cam_<name>"]` / `env.scene.sensors["top_camera"]`.
+    Cameras get `cam_<name>` attrs on the scene cfg, except `top`, which
+    uses the conventional `top_camera` attr/key expected by the v5 recorder.
+    After env init, the new sensors appear under `env.scene.sensors`.
 
     Args:
         env_cfg: An IsaacLab ManagerBasedRLEnvCfg-derived cfg.
@@ -139,9 +139,6 @@ def add_multicam_to_scene_cfg(env_cfg, cam_names: List[str], height: int, width:
         clipping_range=(0.01, 1.0e5),
     )
     for name in cam_names:
-        if name == "top":
-            # rely on task default scene; do nothing
-            continue
         if name == "wrist":
             cfg = CameraCfg(
                 prim_path="{ENV_REGEX_NS}/" + robot_path_suffix + "/wrist_cam",
@@ -157,22 +154,25 @@ def add_multicam_to_scene_cfg(env_cfg, cam_names: List[str], height: int, width:
             )
         elif name in EXTRA_CAMERA_DEFS:
             d = EXTRA_CAMERA_DEFS[name]
+            attr = "top_camera" if name == "top" else f"cam_{name}"
+            prim_name = "top_camera" if name == "top" else f"cam_{name}"
             cfg = CameraCfg(
-                prim_path="{ENV_REGEX_NS}/cam_" + name,
+                prim_path="{ENV_REGEX_NS}/" + prim_name,
                 update_period=0.0,
                 height=height, width=width,
                 data_types=["rgb"],
                 spawn=cam_spawn,
                 offset=CameraCfg.OffsetCfg(
                     pos=tuple(d["pos"]),
-                    rot=tuple(d["rot_xyzw_ros"]),
+                    rot=tuple(d["rot_wxyz_ros"]),
                     convention="ros",
                 ),
             )
         else:
             print(f"[multicam] WARNING: unknown camera '{name}', skipping.")
             continue
-        attr = f"cam_{name}"
+        if name == "wrist":
+            attr = f"cam_{name}"
         setattr(env_cfg.scene, attr, cfg)
         print(f"[multicam] registered scene.{attr} at pos={cfg.offset.pos}")
 

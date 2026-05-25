@@ -15,7 +15,7 @@ Then copy v6 + addons to your IsaacLab working dir as usual:
 
     cp isaac_auto_collector_v6.py isaac_multicam_addons.py /Developer/IsaacLab/
     cd /Developer/IsaacLab
-    ./isaaclab.sh -p isaac_auto_collector_v6.py --enable_cameras --autorun \\
+    ./isaaclab.sh -p isaac_auto_collector_v6.py --device cuda:1 --enable_cameras --autorun \\
         --env lift-ik-rel --max_demos 50 --cams top,left,right,front,wrist
 
 Re-run this script any time v5 changes upstream.
@@ -52,7 +52,9 @@ Diff vs V5:
   3. After parse_env_cfg(), injects additional camera sensors into the scene.
   4. Replaces single-camera LeRobotDemoSaver with multi-camera LeRobotMultiCamSaver.
   5. Per-step capture loops over all selected cameras and records
-     pose + RGB + extrinsic (world->cam OpenCV) per frame.
+     obs_t/images_t/action_t plus pose + RGB + extrinsic per frame.
+  6. Disables Fabric for this single-env camera recorder so camera readback
+     works on a non-default CUDA device such as cuda:1.
 
 H5 output layout (V5-compatible for `obs/images/top` + `obs/state` + `actions`):
 
@@ -70,7 +72,7 @@ Run (on RTX5090, in the isaac_lerobot conda env):
     cd /Developer/IsaacLab
     cp /Developer/omniverselab/IsaacSim/isaac_auto_collector_v6.py .
     cp /Developer/omniverselab/IsaacSim/isaac_multicam_addons.py .
-    ./isaaclab.sh -p isaac_auto_collector_v6.py --enable_cameras --autorun \\
+    ./isaaclab.sh -p isaac_auto_collector_v6.py --device cuda:1 --enable_cameras --autorun \\
         --env lift-ik-rel --max_demos 50 \\
         --cams top,left,right,front,wrist --cam_hw 480,640 \\
         --save_dir logs/demos_multicam_lift
@@ -127,10 +129,11 @@ def _add_cli_flags(s: str) -> str:
 #         The change is exactly *one inserted block*.
 # ----------------------------------------------------------------------------
 def _inject_scene_cfg_call(s: str) -> str:
-    # Match the v5 line: `env_cfg = parse_env_cfg(preset.task_id)` and the
-    # two following num_envs/episode_length tweaks. Insert addon call after them.
+    # Match the v5 line: `env_cfg = parse_env_cfg(...)` and the two following
+    # num_envs/episode_length tweaks. Insert addon call after them.
     pat = re.compile(
-        r"(env_cfg\s*=\s*parse_env_cfg\(preset\.task_id\)\s*\n"
+        r"(env_cfg\s*=\s*parse_env_cfg\(\s*preset\.task_id"
+        r"(?:\s*,\s*device\s*=\s*args_cli\.device)?\s*\)\s*\n"
         r"\s*env_cfg\.scene\.num_envs\s*=\s*1\s*\n"
         r"\s*env_cfg\.episode_length_s\s*=\s*3600\.0\s*\n)"
     )
@@ -146,6 +149,22 @@ def _inject_scene_cfg_call(s: str) -> str:
 
 
 # ----------------------------------------------------------------------------
+# Edit 4b: v6 reads camera tensors every step. On this dual-GPU workstation,
+#          Isaac's Fabric/USDRT path can hang when camera readback asks for
+#          cuda:1 ("GPUs other than cuda:0 are not currently supported").
+#          Disable Fabric for this single-env recorder; slower, but reliable.
+# ----------------------------------------------------------------------------
+def _disable_fabric_for_multicam(s: str) -> str:
+    pat = re.compile(
+        r"env_cfg\s*=\s*parse_env_cfg\(\s*preset\.task_id\s*,\s*device\s*=\s*args_cli\.device\s*\)"
+    )
+    replacement = "env_cfg = parse_env_cfg(preset.task_id, device=args_cli.device, use_fabric=False)"
+    if not pat.search(s):
+        raise RuntimeError("Couldn't locate v6 parse_env_cfg line to disable Fabric.")
+    return pat.sub(replacement, s, count=1)
+
+
+# ----------------------------------------------------------------------------
 # Edit 5: after env init, if --list_cams, print + exit. Then replace saver.
 # ----------------------------------------------------------------------------
 def _replace_saver_init(s: str) -> str:
@@ -153,7 +172,7 @@ def _replace_saver_init(s: str) -> str:
     # assignment line and replace with the multicam version. Insert --list_cams
     # check right before it.
     pat = re.compile(
-        r"saver\s*=\s*LeRobotDemoSaver\([\s\S]*?\)\s*\n",
+        r"^[ \t]*saver\s*=\s*LeRobotDemoSaver\([\s\S]*?\)\s*\n",
         re.MULTILINE,
     )
     if not pat.search(s):
@@ -165,6 +184,16 @@ def _replace_saver_init(s: str) -> str:
         "        if hasattr(env.scene, 'sensors'):\n"
         "            for k in env.scene.sensors:\n"
         "                print(f'  {k}')\n"
+        "        env.reset()\n"
+        "        env.sim.render()\n"
+        "        cam_records = mc.capture_all_cams(env, cam_names)\n"
+        "        print('\\n=== capture_all_cams smoke ===')\n"
+        "        for c in cam_names:\n"
+        "            rec = cam_records.get(c)\n"
+        "            if rec is None:\n"
+        "                print(f'  {c}: MISSING')\n"
+        "            else:\n"
+        "                print(f'  {c}: rgb{tuple(rec[\"rgb\"].shape)}')\n"
         "        env.close(); simulation_app.close(); return\n"
         "    _cam_intrinsics = {\n"
         "        c: mc.intrinsic_from_pinhole_cfg(\n"
@@ -185,26 +214,63 @@ def _replace_saver_init(s: str) -> str:
 
 
 # ----------------------------------------------------------------------------
-# Edit 6: replace the single-camera capture block with multi-cam capture.
+# Edit 6: replace v5's post-step single-camera recording with v6's
+#         pre-step multi-camera recording. This stores obs_t/images_t paired
+#         with action_t, then applies action_t to advance the simulation.
 # ----------------------------------------------------------------------------
 def _replace_capture_block(s: str) -> str:
     pat = re.compile(
-        r"img\s*=\s*None\s*\n"
-        r"\s*if hasattr\(env\.scene,\s*['\"]sensors['\"]\) and ['\"]top_camera['\"] in env\.scene\.sensors:\s*\n"
-        r"\s*img\s*=\s*env\.scene\.sensors\[['\"]top_camera['\"]\]\.data\.output\[['\"]rgb['\"]\]\[0\]\s*\n"
-        r"\s*saver\.record_step\(robot_state,\s*final_action\[0\],\s*image=img\)\s*\n"
+        r"^[ \t]*# Step[ \t]*\n"
+        r"^[ \t]*obs,[ \t]*rewards,[ \t]*dones,[ \t]*_,[ \t]*_[ \t]*=[ \t]*env\.step\(final_action\)[ \t]*\n"
+        r"^[ \t]*robot_state[ \t]*=[ \t]*robot\.data\.joint_pos\[0\][ \t]*\n"
+        r"^[ \t]*img[ \t]*=[ \t]*None[ \t]*\n"
+        r"^[ \t]*if hasattr\(env\.scene,[ \t]*['\"]sensors['\"]\) and ['\"]top_camera['\"] in env\.scene\.sensors:[ \t]*\n"
+        r"^[ \t]*img[ \t]*=[ \t]*env\.scene\.sensors\[['\"]top_camera['\"]\]\.data\.output\[['\"]rgb['\"]\]\[0\][ \t]*\n"
+        r"^[ \t]*saver\.record_step\(robot_state,[ \t]*final_action\[0\],[ \t]*image=img\)[ \t]*\n",
+        re.MULTILINE,
     )
     if not pat.search(s):
         raise RuntimeError(
-            "Couldn't find single-camera capture block. v5 may have changed; "
+            "Couldn't find v5 step + single-camera capture block. v5 may have changed; "
             "search v5 for `top_camera` and adjust this regex in make_v6_from_v5.py."
         )
     replacement = (
-        "        # >>> multicam: capture all selected cameras per step\n"
+        "        # >>> multicam: record obs_t/images_t paired with action_t before stepping\n"
+        "        robot_state = robot.data.joint_pos[0]\n"
         "        cam_records = mc.capture_all_cams(env, cam_names)\n"
         "        saver.record_step(robot_state, final_action[0], cam_records)\n"
+        "\n"
+        "        # Step action_t to advance the simulation\n"
+        "        obs, rewards, dones, _, _ = env.step(final_action)\n"
     )
     return pat.sub(lambda _m: replacement, s, count=1)
+
+
+# ----------------------------------------------------------------------------
+# Edit 7: replace the trailing quick-run note copied from v5 with v6 commands.
+# ----------------------------------------------------------------------------
+def _replace_footer_usage(s: str) -> str:
+    pat = re.compile(r'\n"""\n\(isaac_lerobot\)[\s\S]*?\n"""[ \t]*$', re.MULTILINE)
+    if not pat.search(s):
+        return s
+    replacement = '''\n"""
+(isaac_lerobot) lkk@rtx5090:/Developer/IsaacLab$ cp /Developer/omniverselab/IsaacSim/isaac_auto_collector_v6.py /Developer/IsaacLab/
+(isaac_lerobot) lkk@rtx5090:/Developer/IsaacLab$ cp /Developer/omniverselab/IsaacSim/isaac_multicam_addons.py /Developer/IsaacLab/
+
+./isaaclab.sh -p isaac_auto_collector_v6.py --device cuda:1 --enable_cameras --list_cams \\
+    --env lift-ik-rel --cams top,left,right,front,wrist --cam_hw 64,64
+
+./isaaclab.sh -p isaac_auto_collector_v6.py --device cuda:1 --enable_cameras --autorun \\
+    --env lift-ik-rel --max_demos 50 \\
+    --cams top,left,right,front,wrist --cam_hw 480,640 \\
+    --save_dir logs/demos_multicam_lift
+
+./isaaclab.sh -p isaac_auto_collector_v6.py --device cuda:1 --enable_cameras --autorun \\
+    --env stack-ik-rel --max_demos 50 \\
+    --cams top,left,right,front,wrist --cam_hw 480,640 \\
+    --save_dir logs/demos_multicam_stack
+"""'''
+    return pat.sub(replacement, s, count=1)
 
 
 # ----------------------------------------------------------------------------
@@ -215,8 +281,10 @@ EDITS = [
     ("addons import", _add_addons_import),
     ("CLI flags", _add_cli_flags),
     ("scene cfg call", _inject_scene_cfg_call),
+    ("disable Fabric", _disable_fabric_for_multicam),
     ("saver init", _replace_saver_init),
     ("capture block", _replace_capture_block),
+    ("footer usage", _replace_footer_usage),
 ]
 
 
