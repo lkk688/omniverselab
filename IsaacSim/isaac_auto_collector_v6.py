@@ -255,6 +255,22 @@ parser.add_argument("--cam_hw", type=str, default="480,640",
                     help="Render H,W per camera (default 480,640).")
 parser.add_argument("--list_cams", action="store_true",
                     help="Print env.scene.sensors keys after init and exit.")
+parser.add_argument("--include_ee_pose", action="store_true", default=True,
+                    help="Append EE [pos(3), quat_wxyz(4)] to obs/state (9->16 dims).")
+parser.add_argument("--no_include_ee_pose", dest="include_ee_pose", action="store_false")
+
+# >>> Phase-A diversity knobs
+parser.add_argument("--cube_pose_range_x", type=str, default="-0.15,0.15",
+                    help="Cube x-offset range relative to spawn centre, e.g. '-0.15,0.15'.")
+parser.add_argument("--cube_pose_range_y", type=str, default="-0.30,0.30",
+                    help="Cube y-offset range relative to spawn centre.")
+parser.add_argument("--cube_pose_range_yaw", type=str, default="-3.14,3.14",
+                    help="Cube yaw rotation range in radians.")
+parser.add_argument("--cube_scale_range", type=str, default="0.70,1.50",
+                    help="Cube scale randomization range (per-axis, uniform).")
+parser.add_argument("--init_joint_noise_std", type=float, default=0.10,
+                    help="Std of Gaussian noise added to default arm joint positions on reset (rad). "
+                         "0 = no noise (vanilla). 0.10 ~ 6 deg per joint -> ~5-10 cm EE variation.")
 
 AppLauncher.add_app_launcher_args(parser)
 args_cli = parser.parse_args()
@@ -556,8 +572,13 @@ class EnvRandomizer:
             # Prim not found at given path — try binding directly anyway
             self._bind_new_material(prim_path, rgb, roughness)
 
-        # Scale variation: rectangular prism (±15% per axis, ±20% base)
-        base = float(np.random.uniform(0.85, 1.20))
+        # Scale variation: rectangular prism. Base range controlled by --cube_scale_range
+        # (Phase-A: default 0.70-1.50 vs old 0.85-1.20). Per-axis jitter unchanged.
+        try:
+            base_lo, base_hi = (float(x) for x in args_cli.cube_scale_range.split(","))
+        except Exception:
+            base_lo, base_hi = 0.85, 1.20
+        base = float(np.random.uniform(base_lo, base_hi))
         sx = base * float(np.random.uniform(0.85, 1.15))
         sy = base * float(np.random.uniform(0.85, 1.15))
         sz = base * float(np.random.uniform(0.90, 1.10))
@@ -1180,10 +1201,21 @@ def main():
     print(f"\n  Environment: {preset.task_id}")
     print(f"  Preset:      {args_cli.env} — {preset.description}\n")
 
-    env_cfg = parse_env_cfg(preset.task_id, device=args_cli.device, use_fabric=False)
+    env_cfg = parse_env_cfg(preset.task_id, device=args_cli.device)
     env_cfg.scene.num_envs = 1
     env_cfg.episode_length_s = 3600.0
 
+    # >>> Phase-A diversity: widen cube spawn pose range
+    if hasattr(env_cfg, "events") and hasattr(env_cfg.events, "reset_object_position"):
+        ep = env_cfg.events.reset_object_position
+        if hasattr(ep, "params"):
+            rx = tuple(float(x) for x in args_cli.cube_pose_range_x.split(","))
+            ry = tuple(float(x) for x in args_cli.cube_pose_range_y.split(","))
+            ryaw = tuple(float(x) for x in args_cli.cube_pose_range_yaw.split(","))
+            ep.params["pose_range"] = {
+                "x": rx, "y": ry, "z": (0.0, 0.0), "yaw": ryaw,
+            }
+            print(f"[diversity] cube spawn pose_range overridden -> x={rx}  y={ry}  yaw={ryaw}")
 
     # >>> multicam: inject extra cameras into the scene before env init
     cam_names = [c.strip() for c in args_cli.cams.split(',') if c.strip()]
@@ -1330,6 +1362,23 @@ def main():
         saver.clear()
         controller.reset()
         time.sleep(0.05)  # let physics settle before USD edits
+
+        # >>> Phase-A diversity: perturb initial arm joint angles around defaults.
+        # Noise only on the 7 arm joints (indices 0..6); finger joints kept at default.
+        if args_cli.init_joint_noise_std > 0:
+            default_jp = robot.data.default_joint_pos[0:1].clone()
+            default_jv = robot.data.default_joint_vel[0:1].clone()
+            noise = torch.zeros_like(default_jp)
+            noise[0, :7] = torch.randn(7, device=default_jp.device) * args_cli.init_joint_noise_std
+            new_jp = default_jp + noise
+            try:
+                robot.write_joint_state_to_sim(new_jp, default_jv)
+            except Exception as e:
+                print(f"  [diversity] joint perturb failed: {e}")
+            # Step the sim a few frames so the new arm pose settles before recording.
+            for _ in range(5):
+                env.sim.step(render=False)
+            episode_meta["init_joint_noise_std"] = float(args_cli.init_joint_noise_std)
 
         if randomizer is not None:
             cube_path  = _prim_path(preset.pick_key)
@@ -1508,9 +1557,17 @@ def main():
             final_action = padded
 
         # >>> multicam: record obs_t/images_t paired with action_t before stepping
-        robot_state = robot.data.joint_pos[0]
+        if args_cli.include_ee_pose:
+            robot_state = torch.cat([
+                robot.data.joint_pos[0],
+                robot.data.body_pos_w[0, ee_idx],
+                robot.data.body_quat_w[0, ee_idx],
+            ])
+        else:
+            robot_state = robot.data.joint_pos[0]
         cam_records = mc.capture_all_cams(env, cam_names)
-        saver.record_step(robot_state, final_action[0], cam_records)
+        cube_pose_now = pick_pos  # 3D world pos of the lift target at this step
+        saver.record_step(robot_state, final_action[0], cam_records, cube_pose=cube_pose_now)
 
         # Step action_t to advance the simulation
         obs, rewards, dones, _, _ = env.step(final_action)

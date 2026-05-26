@@ -13,6 +13,14 @@ from mylerobot import _env_shim as _env_shim  # noqa: F401
 
 from mylerobot.policies.act_lang.configuration import ACTLangConfig
 from mylerobot.policies.act_lang.modeling import ACTLangPolicy
+from mylerobot.policies.act_bev.configuration_act_bev import ACTBEVConfig
+from mylerobot.policies.act_bev.modeling_act_bev import ACTBEVPolicy
+from mylerobot.policies.act_cheat_noisy.configuration_act_cheat_noisy import ACTCheatNoisyConfig
+from mylerobot.policies.act_cheat_noisy.modeling_act_cheat_noisy import ACTCheatNoisyPolicy
 
-__all__ = ["ACTLangConfig", "ACTLangPolicy"]
+__all__ = [
+    "ACTLangConfig", "ACTLangPolicy",
+    "ACTBEVConfig", "ACTBEVPolicy",
+    "ACTCheatNoisyConfig", "ACTCheatNoisyPolicy",
+]
 __version__ = "0.0.1"
