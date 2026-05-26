@@ -364,6 +364,7 @@ PYTHONPATH=/Developer/lerobot/src python /Developer/omniverselab/IsaacSim/conver
   --root logs/lerobot_multicam_lift_fixed \
   --task "lift the cube" \
   --image_dtype video \
+  --resize_hw 240,320 \
   --overwrite
 
 # Manual demo recording can use the same GPU flag:

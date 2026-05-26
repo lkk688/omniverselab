@@ -50,7 +50,10 @@ EXTRA_CAMERA_DEFS: Dict[str, Dict[str, Any]] = {
     "top":   {"pos": (0.5,  0.0, 1.25)},
     "left":  {"pos": (0.4,  0.6, 0.4)},
     "right": {"pos": (0.4, -0.6, 0.4)},
-    "front": {"pos": (1.1,  0.0, 0.3)},
+    # Front: front-LEFT corner ("agent view" a la LIBERO/ALOHA). Direct-front gets
+    # occluded by the arm during descent/grasp because the arm reaches in along
+    # the workspace-camera axis. Offsetting to a corner solves that.
+    "front": {"pos": (1.0,  0.5, 0.4)},
 }
 
 
@@ -132,8 +135,10 @@ def add_multicam_to_scene_cfg(env_cfg, cam_names: List[str], height: int, width:
     import isaaclab.sim as sim_utils
     from isaaclab.sensors import CameraCfg
 
+    # Phase-A widening: HFOV ~ 73 deg, matching LIBERO/RealSense-class robotics cams.
+    # (Was focal_length=24 → HFOV ~47°, which cropped the workspace at the front-cam edges.)
     cam_spawn = sim_utils.PinholeCameraCfg(
-        focal_length=24.0,
+        focal_length=14.0,
         focus_distance=400.0,
         horizontal_aperture=20.955,
         clipping_range=(0.01, 1.0e5),
@@ -266,6 +271,7 @@ class LeRobotMultiCamSaver:
             os.makedirs(os.path.join(save_dir, "failed"), exist_ok=True)
         self.states: List[np.ndarray] = []
         self.actions: List[np.ndarray] = []
+        self.cube_poses: List[np.ndarray] = []
         self.images: Dict[str, List[np.ndarray]] = {c: [] for c in self.cam_names}
         self.extrinsics: Dict[str, List[np.ndarray]] = {c: [] for c in self.cam_names}
         self.pos_w: Dict[str, List[np.ndarray]] = {c: [] for c in self.cam_names}
@@ -274,11 +280,17 @@ class LeRobotMultiCamSaver:
         self.success_count = 0
         self.fail_count = 0
 
-    def record_step(self, joint_pos, action, cam_records: Dict[str, Dict[str, Any]]):
+    def record_step(self, joint_pos, action, cam_records: Dict[str, Dict[str, Any]],
+                    cube_pose=None):
         """cam_records: {cam_name: {"rgb": HxWx3 (uint8 np|tensor),
-                                     "pos_w": (3,), "quat_w_wxyz": (4,)}}"""
+                                     "pos_w": (3,), "quat_w_wxyz": (4,)}}
+        cube_pose (optional): (3,) world position of the target object at this step.
+        """
         self.states.append(joint_pos.cpu().numpy() if torch.is_tensor(joint_pos) else joint_pos)
         self.actions.append(action.cpu().numpy() if torch.is_tensor(action) else action)
+        if cube_pose is not None:
+            cp = cube_pose.cpu().numpy() if torch.is_tensor(cube_pose) else np.asarray(cube_pose)
+            self.cube_poses.append(np.asarray(cp, dtype=np.float32).reshape(3))
         for c in self.cam_names:
             rec = cam_records.get(c)
             if rec is None:
@@ -328,6 +340,9 @@ class LeRobotMultiCamSaver:
                              compression="gzip", compression_opts=4)
             f.create_dataset("actions", data=np.array(self.actions),
                              compression="gzip", compression_opts=4)
+            if self.cube_poses:
+                f.create_dataset("obs/cube_pose", data=np.array(self.cube_poses),
+                                 compression="gzip", compression_opts=4)
             for c in self.cam_names:
                 if not self.images[c]:
                     continue
@@ -370,6 +385,7 @@ class LeRobotMultiCamSaver:
     def clear(self):
         self.states.clear()
         self.actions.clear()
+        self.cube_poses.clear()
         for c in self.cam_names:
             self.images[c].clear()
             self.extrinsics[c].clear()

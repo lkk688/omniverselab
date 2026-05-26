@@ -173,7 +173,7 @@ def test_config_accepts_unet_with_occupancy():
 
 def test_config_register_subclass():
     """PI0VoxelConfig should be registered with type='pi0_voxel'."""
-    from lerobot.configs import PreTrainedConfig
+    from lerobot.configs.policies import PreTrainedConfig
     # subclass registry lookup
     found = PreTrainedConfig.get_choice_class("pi0_voxel")
     assert found is PI0VoxelConfig

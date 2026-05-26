@@ -34,7 +34,7 @@ import torch
 
 os.environ.setdefault("MUJOCO_GL", "egl")
 
-from lerobot.configs import PreTrainedConfig
+from lerobot.configs.policies import PreTrainedConfig
 from lerobot.envs.configs import LiberoEnv as LiberoEnvConfig
 from lerobot.envs.factory import make_env_pre_post_processors
 from lerobot.envs.libero import LiberoEnv

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Literal
 
-from lerobot.configs import PreTrainedConfig
+from lerobot.configs.policies import PreTrainedConfig
 from lerobot.policies.act.configuration_act import ACTConfig
 
 
