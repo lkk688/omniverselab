@@ -87,6 +87,14 @@ class ACTBEV(ACT):
         self.bev_input_proj = nn.Conv2d(
             config.bev_feature_dim, config.dim_model, kernel_size=1
         )
+        # ControlNet/LoRA trick (matches HPC VoxelCrossAttnFusion's
+        # zero_init_out_proj=True default): voxel-token contribution to the
+        # transformer encoder starts at zero, so the action transformer
+        # behaves identically to a no-vision baseline at step 0 and learns to
+        # use BEV tokens only when they help. Addresses the empirical
+        # "transformer ignores BEV" failure mode from ACT-BEV-v1/v2/v3.
+        nn.init.zeros_(self.bev_input_proj.weight)
+        nn.init.zeros_(self.bev_input_proj.bias)
 
         # Auxiliary cube-heatmap head
         if config.aux_enable:
@@ -101,11 +109,19 @@ class ACTBEV(ACT):
             self.encoder_robot_state_input_proj = nn.Linear(
                 state_dim_in + 2, config.dim_model
             )
+            # Same trick as bev_input_proj above: zero out the columns
+            # corresponding to the 2 centroid dims so they contribute 0 at
+            # step 0 (proprio columns keep their default init). This is the
+            # zero-init for a sub-slice of the input, not the whole projection.
+            with torch.no_grad():
+                self.encoder_robot_state_input_proj.weight[:, state_dim_in:].zero_()
             # Same for the VAE branch (which also reads observation.state).
             if config.use_vae:
                 self.vae_encoder_robot_state_input_proj = nn.Linear(
                     state_dim_in + 2, config.dim_model
                 )
+                with torch.no_grad():
+                    self.vae_encoder_robot_state_input_proj.weight[:, state_dim_in:].zero_()
             # Precompute the BEV grid's world-XY coordinates as a buffer,
             # used by soft-argmax for centroid extraction.
             x_lo, x_hi = config.voxel_x_range
