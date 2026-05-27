@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 
-from lerobot.configs import PreTrainedConfig
+from lerobot.configs.policies import PreTrainedConfig
 from lerobot.policies.pi0.configuration_pi0 import PI0Config
 
 

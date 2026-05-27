@@ -31,7 +31,7 @@ import gym_aloha  # noqa: F401  -- registers gym_aloha/AlohaInsertion-v0 etc.
 import numpy as np
 import torch
 
-from lerobot.configs import PreTrainedConfig
+from lerobot.configs.policies import PreTrainedConfig
 from lerobot.policies.act.modeling_act import ACTPolicy
 from lerobot.policies.factory import make_pre_post_processors
 from lerobot.envs.utils import preprocess_observation

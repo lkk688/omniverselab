@@ -36,6 +36,7 @@ from typing import Any
 
 import h5py
 import numpy as np
+from PIL import Image
 
 
 def _load_lerobot_dataset_class():
@@ -97,10 +98,21 @@ def _feature_names(prefix: str, dim: int) -> list[str]:
     return [f"{prefix}_{i}" for i in range(dim)]
 
 
-def _build_features(first_file: Path, cams: list[str], image_dtype: str) -> dict[str, Any]:
+def _build_features(first_file: Path, cams: list[str], image_dtype: str,
+                    include_cube_pose: bool = False,
+                    cube_pose_as_obs: bool = False) -> dict[str, Any]:
     with h5py.File(first_file, "r") as h5:
         state_dim = int(h5["obs/state"].shape[1])
         action_dim = int(h5["actions"].shape[1])
+        cube_pose_dim = None
+        if include_cube_pose:
+            if "obs/cube_pose" not in h5:
+                raise KeyError(f"{first_file} missing obs/cube_pose but --include_cube_pose set.")
+            state_dim += int(h5["obs/cube_pose"].shape[1])
+        if cube_pose_as_obs:
+            if "obs/cube_pose" not in h5:
+                raise KeyError(f"{first_file} missing obs/cube_pose but --cube_pose_as_obs set.")
+            cube_pose_dim = int(h5["obs/cube_pose"].shape[1])
         features: dict[str, Any] = {
             "observation.state": {
                 "dtype": "float32",
@@ -122,7 +134,20 @@ def _build_features(first_file: Path, cams: list[str], image_dtype: str) -> dict
                 "shape": (int(height), int(width), int(channels)),
                 "names": ["height", "width", "channel"],
             }
+        if cube_pose_as_obs:
+            features["observation.cube_pose"] = {
+                "dtype": "float32",
+                "shape": (cube_pose_dim,),
+                "names": ["x", "y", "z"],
+            }
     return features
+
+
+def _resize_rgb(rgb: np.ndarray, resize_hw: tuple[int, int] | None) -> np.ndarray:
+    if resize_hw is None:
+        return rgb
+    height, width = resize_hw
+    return np.asarray(Image.fromarray(rgb).resize((width, height), Image.Resampling.BILINEAR), dtype=np.uint8)
 
 
 def _validate_episode(h5: h5py.File, cams: list[str]) -> int:
@@ -154,7 +179,15 @@ def convert(args: argparse.Namespace) -> Path:
     if not cams:
         raise ValueError("No cameras found. Pass --cams or check obs/images/<cam> in the HDF5.")
 
-    features = _build_features(files[0], cams, args.image_dtype)
+    features = _build_features(files[0], cams, args.image_dtype,
+                               include_cube_pose=args.include_cube_pose,
+                               cube_pose_as_obs=args.cube_pose_as_obs)
+    if args.resize_hw is not None:
+        height, width = args.resize_hw
+        for cam in cams:
+            key = f"observation.images.{cam}"
+            channels = features[key]["shape"][2]
+            features[key]["shape"] = (height, width, channels)
     dataset = LeRobotDataset.create(
         repo_id=args.repo_id,
         fps=args.fps,
@@ -171,15 +204,24 @@ def convert(args: argparse.Namespace) -> Path:
             meta = _metadata(h5)
             task = args.task or str(meta.get("task") or meta.get("env") or "isaac manipulation")
             for t in range(steps):
+                state = np.asarray(h5["obs/state"][t], dtype=np.float32)
+                if args.include_cube_pose:
+                    state = np.concatenate([
+                        state,
+                        np.asarray(h5["obs/cube_pose"][t], dtype=np.float32),
+                    ])
                 frame: dict[str, Any] = {
-                    "observation.state": np.asarray(h5["obs/state"][t], dtype=np.float32),
+                    "observation.state": state,
                     "action": np.asarray(h5["actions"][t], dtype=np.float32),
                     "task": task,
                 }
-                for cam in cams:
-                    frame[f"observation.images.{cam}"] = np.asarray(
-                        h5[f"obs/images/{cam}"][t], dtype=np.uint8
+                if args.cube_pose_as_obs:
+                    frame["observation.cube_pose"] = np.asarray(
+                        h5["obs/cube_pose"][t], dtype=np.float32
                     )
+                for cam in cams:
+                    rgb = np.asarray(h5[f"obs/images/{cam}"][t], dtype=np.uint8)
+                    frame[f"observation.images.{cam}"] = _resize_rgb(rgb, args.resize_hw)
                 dataset.add_frame(frame)
             dataset.save_episode()
             total_frames += steps
@@ -200,9 +242,22 @@ def main() -> None:
     parser.add_argument("--fps", type=int, default=50, help="Isaac IK-Rel collector runs at 50 Hz.")
     parser.add_argument("--cams", default="", help="Comma-separated camera list. Defaults to HDF5 metadata.")
     parser.add_argument("--image_dtype", choices=["video", "image"], default="video")
+    parser.add_argument(
+        "--resize_hw",
+        default="",
+        help="Optional H,W resize for RGB frames before writing LeRobotDataset, e.g. 240,320.",
+    )
     parser.add_argument("--overwrite", action="store_true", help="Replace --root if it already exists.")
+    parser.add_argument("--include_cube_pose", action="store_true",
+                        help="Append obs/cube_pose to observation.state (cheat baseline / oracle).")
+    parser.add_argument("--cube_pose_as_obs", action="store_true",
+                        help="Store obs/cube_pose as a separate feature observation.cube_pose "
+                             "(used as auxiliary supervision target, not as policy input).")
     args = parser.parse_args()
     args.cams = [c.strip() for c in args.cams.split(",") if c.strip()] or None
+    args.resize_hw = tuple(int(x) for x in args.resize_hw.split(",")) if args.resize_hw else None
+    if args.resize_hw is not None and len(args.resize_hw) != 2:
+        raise ValueError("--resize_hw must be formatted as H,W, e.g. 240,320")
     convert(args)
 
 

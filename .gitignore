@@ -212,3 +212,15 @@ omniverselab.code-workspace
 output/
 
 docs/cmpe249_isaac_sim_reflection.md
+
+# Claude Code local state (not part of project)
+.claude/
+
+# Generated artifacts that should never be committed
+*.hdf5
+*.h5
+*.mp4
+*.trace.csv
+eval_n*.json
+diag2_offline_regression/
+logs/
