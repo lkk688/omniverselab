@@ -107,3 +107,110 @@ B-4 and B-5 are designed to compose:
 - B-5 changes WHAT signal trains the voxel module (action loss + aux geometric loss)
 
 The full architecture after both: voxel features computed by VoxelCrossAttnFusion → (a) state-prediction head with aux loss + (b) cross-attention into action expert. Either by itself may be insufficient; together they directly attack both the routing problem (B-4) and the gradient-signal problem (B-5).
+
+---
+
+## B-5 implementation (2026-05-26)
+
+### Code changes already landed in commit 38eb93a
+
+1. **`configuration_pi0_voxel.py`** — added two fields:
+   - `aux_state_pred_weight: float = 0.0` (default off; set > 0 to enable)
+   - `aux_state_pool: str = "mean"` (pooling strategy; only "mean" implemented)
+
+2. **`modeling_pi0_voxel.py`**:
+   - `PI0VoxelPytorch.__init__`: builds `aux_state_head = Linear(C → C/4) → ReLU → Linear(C/4 → 3)` when `aux_state_pred_weight > 0`. Built lazily so disabled runs have unchanged state_dict.
+   - `PI0VoxelPytorch.embed_prefix`: stashes computed voxel_tokens on `self._last_voxel_tokens` when aux head exists.
+   - `PI0VoxelPolicy.forward`: mean-pools the stashed voxel tokens, runs the aux head, computes MSE vs `observation.state[:3]`, adds `aux_w * aux_loss` to total loss. Logs `aux_state_loss` and `aux_state_l1` to the output dict.
+
+3. **`tests/test_pi0_voxel.py`** — 1 new test (default 0.0 + accepts custom weight). 57/57 tests pass.
+
+### Smoke train recipe (run before full 10k to verify wiring)
+
+```bash
+cd /fs/atipa/data/rnd-liu/MyRepo/omniverselab/mylerobot
+nvidia-smi --query-gpu=memory.free --format=csv,noheader   # require ≥12 GB
+
+PYTORCH_ALLOC_CONF=expandable_segments:True \
+/home/010796032/.conda/envs/py312/bin/python scripts/train_act.py \
+    --dataset.repo_id=lerobot/libero \
+    --dataset.video_backend=pyav \
+    --dataset.use_imagenet_stats=false \
+    --dataset.image_transforms.enable=true \
+    --policy.type=pi0_voxel \
+    --policy.pretrained_path=lerobot/pi0_libero_finetuned_v044 \
+    --policy.train_expert_only=true \
+    --policy.push_to_hub=false \
+    --policy.voxel_camera_keys='["observation.images.image","observation.images.image2"]' \
+    --policy.aux_state_pred_weight=0.1 \
+    --output_dir=/data/rnd-liu/aiprojects/lerobot/outputs/train/2026-05-27/pi0voxel_b5_smoke \
+    --job_name=pi0voxel_b5_smoke \
+    --steps=10 \
+    --batch_size=2 \
+    --num_workers=2 \
+    --save_freq=100 \
+    --log_freq=1 \
+    --wandb.enable=false \
+    2>&1 | tee /tmp/pi0voxel_b5_smoke.log
+```
+
+**Pass criteria for smoke:**
+- No NaN / OOM / crash
+- `aux_state_loss` and `aux_state_l1` appear in log output (confirms aux head running)
+- `aux_state_l1` starts ≲ 0.5 m (workspace radius) — sanity check that head outputs are in the right ballpark
+
+### Full 10k retrain recipe (after smoke passes)
+
+```bash
+PYTORCH_ALLOC_CONF=expandable_segments:True \
+/home/010796032/.conda/envs/py312/bin/python scripts/train_act.py \
+    --dataset.repo_id=lerobot/libero \
+    --dataset.video_backend=pyav \
+    --dataset.use_imagenet_stats=false \
+    --dataset.image_transforms.enable=true \
+    --policy.type=pi0_voxel \
+    --policy.pretrained_path=lerobot/pi0_libero_finetuned_v044 \
+    --policy.train_expert_only=true \
+    --policy.push_to_hub=false \
+    --policy.voxel_camera_keys='["observation.images.image","observation.images.image2"]' \
+    --policy.aux_state_pred_weight=0.1 \
+    --output_dir=/data/rnd-liu/aiprojects/lerobot/outputs/train/2026-05-27/pi0voxel_b5_10k \
+    --job_name=pi0voxel_b5_10k \
+    --steps=10000 \
+    --batch_size=4 \
+    --num_workers=4 \
+    --save_freq=2000 \
+    --log_freq=100 \
+    --wandb.enable=false \
+    > /tmp/pi0voxel_b5_10k.log 2>&1 &
+```
+
+ETA ~50 min on H100 with ≥ 12 GB free.
+
+### Extrinsics-corruption test on B-5 checkpoint (the dispositive experiment)
+
+After the 10k retrain finishes, run the 4-way corruption test on the new checkpoint. **The answer to "does B-5 work" is:** does `correct` now beat `identity` by more than the n=50 Wilson CI (~14 pp)?
+
+```bash
+CKPT=/data/rnd-liu/aiprojects/lerobot/outputs/train/2026-05-27/pi0voxel_b5_10k/checkpoints/last/pretrained_model
+
+# 1. Correct extrinsics, libero_spatial Camera
+MUJOCO_GL=egl /home/010796032/.conda/envs/py312/bin/python scripts/eval_libero_plus_fragility.py \
+    --policy_path $CKPT \
+    --suites libero_spatial --categories "Camera Viewpoints" \
+    --max_tasks_per_category 50 --max_steps 220 \
+    --output_json /data/rnd-liu/aiprojects/lerobot/outputs/eval/extrinsics_corruption/pi0voxel_B5_n50_spatial_camera_correct.json
+
+# 2. Identity extrinsics
+MUJOCO_GL=egl /home/010796032/.conda/envs/py312/bin/python scripts/eval_libero_plus_fragility.py \
+    --policy_path $CKPT \
+    --suites libero_spatial --categories "Camera Viewpoints" \
+    --max_tasks_per_category 50 --max_steps 220 \
+    --corrupt_extrinsics identity \
+    --output_json /data/rnd-liu/aiprojects/lerobot/outputs/eval/extrinsics_corruption/pi0voxel_B5_n50_spatial_camera_identity.json
+```
+
+**Decision based on outcome:**
+- If `correct − identity > +14 pp` (outside CI) → B-5 worked. Architecture *can* use geometry given the right supervision. Move to B-4 (dual-system routing) for further gains.
+- If `correct ≈ identity` (within ±14 pp) → B-5 didn't move the needle. The aux loss converges but the action expert ignores the now-geometric voxel features anyway. Skip directly to B-4 (re-route to action expert is required, not just better supervision).
+- If `correct < identity` (significantly) → architecture actively hurt by geometry. Investigate aux head training (probably a bug or the wrong supervision).
