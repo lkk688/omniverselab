@@ -71,6 +71,20 @@ class PI0VoxelPytorch(PI0Pytorch):
             dropout=config.voxel_dropout,
         )
 
+        # Road B-5: auxiliary state-prediction head on pooled voxel tokens.
+        # Predicts EEF position (3D) from voxel features to force the voxel
+        # module to actually encode geometric content. Only built when
+        # `aux_state_pred_weight > 0` to avoid changing parameter count
+        # / state_dict structure when disabled.
+        if getattr(config, "aux_state_pred_weight", 0.0) > 0.0:
+            self.aux_state_head = torch.nn.Sequential(
+                torch.nn.Linear(paligemma_hidden, paligemma_hidden // 4),
+                torch.nn.ReLU(inplace=True),
+                torch.nn.Linear(paligemma_hidden // 4, 3),  # predict eef_pos (x, y, z)
+            )
+        else:
+            self.aux_state_head = None
+
     def _siglip_spatial_features(self, image_bchw: Tensor) -> Tensor:
         """Run a single (B, 3, 224, 224) image through SigLIP and return
         spatial features (B, C=1152, Hf, Wf) suitable for voxel cross-attn."""
@@ -99,9 +113,11 @@ class PI0VoxelPytorch(PI0Pytorch):
         intrinsics: Tensor,
         extrinsics: Tensor,
         cam_mask: Tensor | None = None,
+        workspace_translate: Tensor | None = None,
     ) -> tuple[Tensor, Tensor, list]:
         tokens = self.voxel_fusion(
             cam_image_feats, intrinsics, extrinsics, cam_mask=cam_mask,
+            workspace_translate=workspace_translate,
         )
         B, N, _ = tokens.shape
         pad_mask = torch.ones((B, N), dtype=torch.bool, device=tokens.device)
@@ -129,6 +145,7 @@ class PI0VoxelPytorch(PI0Pytorch):
             aux["intrinsics"],
             aux["extrinsics"],
             cam_mask=aux.get("cam_mask"),
+            workspace_translate=aux.get("workspace_translate"),
         )
 
         B = embs.shape[0]
@@ -138,6 +155,13 @@ class PI0VoxelPytorch(PI0Pytorch):
         embs_out = torch.cat([embs, voxel_tokens], dim=1)
         pad_masks_out = torch.cat([pad_masks, voxel_pad], dim=1)
         att_masks_out = torch.cat([att_masks, ar_extra], dim=1)
+
+        # Road B-5: stash voxel tokens so PI0VoxelPolicy.forward can compute
+        # the auxiliary state-prediction loss after the action loss is computed.
+        # Note: cleared by PI0VoxelPolicy.forward, not here (so multiple
+        # samples within a step's diffusion loop all see the same voxel tokens).
+        if self.aux_state_head is not None:
+            self._last_voxel_tokens = voxel_tokens  # (B, N_voxel, paligemma_hidden)
 
         self._pending_voxel_aux = None
         return embs_out, pad_masks_out, att_masks_out
@@ -153,6 +177,9 @@ class PI0VoxelPolicy(PI0Policy):
         if config.gradient_checkpointing:
             self.model.gradient_checkpointing_enable()
         self.model.to(config.device)
+        # Eval-side ablation hook: set to 'identity' or 'shuffle' to corrupt
+        # extrinsics before voxel projection (see _prepare_voxel_aux).
+        self._extrinsics_corruption: str | None = None
 
     def _prepare_voxel_aux(self, batch: dict[str, Tensor]) -> None:
         cfg = self.config
@@ -236,11 +263,46 @@ class PI0VoxelPolicy(PI0Policy):
             device=device,
         )
 
+        # Eval-side ablation hook: corrupt extrinsics to isolate whether the
+        # voxel module actually uses geometry. Set via
+        # `policy._extrinsics_corruption = 'identity' | 'shuffle' | None`.
+        # - 'identity': replace world->cam with identity; cameras pretend to sit
+        #   at world origin looking down +Z. Removes ALL geometric info.
+        # - 'shuffle': randomly permute the per-camera extrinsics so the wrong
+        #   image features get attached to each projected voxel. Keeps the
+        #   distribution but destroys the correspondence.
+        corruption = getattr(self, "_extrinsics_corruption", None)
+        if corruption == "identity":
+            eye = torch.eye(4, device=device, dtype=extrinsics.dtype)
+            extrinsics = eye.view(1, 1, 4, 4).expand_as(extrinsics).contiguous()
+        elif corruption == "shuffle":
+            B_e, Ncam = extrinsics.shape[:2]
+            perm = torch.randperm(Ncam, device=device)
+            extrinsics = extrinsics[:, perm].contiguous()
+        elif corruption is not None:
+            raise ValueError(
+                f"Unknown _extrinsics_corruption: {corruption!r} "
+                "(expected None, 'identity', or 'shuffle')"
+            )
+
+        # Optional per-batch workspace re-centring: voxel grid follows the
+        # gripper instead of being pinned to a fixed Panda tabletop centre.
+        workspace_translate = None
+        if getattr(cfg, "workspace_centered_on_eef", False):
+            state = batch.get("observation.state")
+            if state is not None and state.shape[-1] >= 3:
+                eef_pos = state[..., :3].to(device=device, dtype=torch.float32)
+                canon = torch.tensor(
+                    cfg.canonical_eef_center, device=device, dtype=torch.float32
+                )
+                workspace_translate = eef_pos - canon
+
         self.model._pending_voxel_aux = {
             "cam_indices": cam_indices,
             "extrinsics": extrinsics,
             "intrinsics": intrinsics,
             "cam_mask": cam_mask,
+            "workspace_translate": workspace_translate,
         }
 
     def predict_action_chunk(self, batch, **kwargs):
@@ -249,7 +311,40 @@ class PI0VoxelPolicy(PI0Policy):
 
     def forward(self, batch, reduction: str = "mean"):
         self._prepare_voxel_aux(batch)
-        return super().forward(batch, reduction=reduction)
+        # Clear any stale voxel-token stash before the forward (so the aux
+        # head only sees this call's tokens, not the last call's).
+        if getattr(self.model, "aux_state_head", None) is not None:
+            self.model._last_voxel_tokens = None
+
+        loss, out = super().forward(batch, reduction=reduction)
+
+        # Road B-5: auxiliary state-prediction loss.
+        aux_w = float(getattr(self.config, "aux_state_pred_weight", 0.0))
+        if aux_w > 0.0 and self.model.aux_state_head is not None:
+            voxel_tokens = getattr(self.model, "_last_voxel_tokens", None)
+            state = batch.get("observation.state")
+            if voxel_tokens is not None and state is not None and state.shape[-1] >= 3:
+                # Pool: mean over voxel-token dim (B, N, C) -> (B, C)
+                pool = self.config.aux_state_pool
+                if pool == "mean":
+                    pooled = voxel_tokens.mean(dim=1)
+                else:
+                    raise NotImplementedError(f"aux_state_pool='{pool}' not implemented")
+                # Predict EEF position (3,) in world frame
+                pred_eef = self.model.aux_state_head(pooled.to(self.model.aux_state_head[0].weight.dtype))
+                true_eef = state[..., :3].to(pred_eef.dtype)
+                if pred_eef.shape == true_eef.shape:
+                    aux_loss = torch.nn.functional.mse_loss(
+                        pred_eef, true_eef, reduction=reduction
+                    )
+                    loss = loss + aux_w * aux_loss
+                    if isinstance(out, dict):
+                        out["aux_state_loss"] = aux_loss.detach()
+                        out["aux_state_l1"] = (pred_eef.detach() - true_eef.detach()).abs().mean()
+                # Clear stash after use
+                self.model._last_voxel_tokens = None
+
+        return loss, out
 
 
 # Backwards-compat shims for older callers / tests that used the lazy factory

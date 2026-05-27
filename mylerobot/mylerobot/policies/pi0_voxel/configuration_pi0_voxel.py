@@ -78,6 +78,35 @@ class PI0VoxelConfig(PI0Config):
     # ------------------------------------------------------------------
     extrinsics_optional: bool = True
 
+    # ------------------------------------------------------------------
+    # Per-batch workspace re-centring (fixes the Robot Init regression
+    # caused by hard-coded Panda tabletop bounds — see PROJECT_STATUS row
+    # 2e analysis). When True, voxel grid translates per-batch so it stays
+    # centred on `canonical_eef_center + (state[:3] - canonical_eef_center)`,
+    # i.e. it follows the gripper. The grid SHAPE / bounds extents stay
+    # fixed; only the centre moves.
+    # ------------------------------------------------------------------
+    workspace_centered_on_eef: bool = False
+    # World-frame eef position that `workspace_bounds` was specified around.
+    # The default (0, 0, 1.0) matches the centre of the Panda tabletop bounds.
+    canonical_eef_center: tuple[float, float, float] = (0.0, 0.0, 1.0)
+
+    # ------------------------------------------------------------------
+    # Road B-5: auxiliary state-prediction head on voxel features.
+    # Predicts `observation.state[:3]` (eef_pos in world frame) from
+    # pooled voxel tokens. The aux loss provides the inductive bias the
+    # action loss alone failed to provide (PROJECT_STATUS row 2h.3 showed
+    # identity ≈ correct extrinsics even after fixed-xmat retrain — the
+    # architecture lacks a gradient signal that rewards geometric
+    # correctness). Setting `aux_state_pred_weight > 0` adds the aux loss
+    # to total training loss with the given weight.
+    # ------------------------------------------------------------------
+    aux_state_pred_weight: float = 0.0
+    # Pooling strategy for voxel tokens before the state-prediction head.
+    # "mean" — simple mean over voxel tokens
+    # "attention" — learnable attention-weighted pool (TODO)
+    aux_state_pool: str = "mean"
+
     def __post_init__(self):
         super().__post_init__()
         if self.voxel_arch not in {"cross_attn", "unet"}:

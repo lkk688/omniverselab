@@ -31,12 +31,17 @@ import torch
 # Agentview camera pose in world frame (mujoco `cam_xpos`/`cam_xmat` for the
 # `agentview` camera in standard LIBERO scenes — independent of task).
 AGENTVIEW_POS_WORLD = np.array([0.65861317, 0.0, 1.61035002], dtype=np.float64)
-# Cam-frame axes expressed in world frame (from agentview probe at default
-# scene state; agentview is `targetbody`-mode so this is the equilibrium pose).
+# Cam-frame axes expressed in world frame. Probed from LIBERO env 2026-05-26
+# (`sim.data.cam_xmat[cam_id].reshape(3,3)` for agentview). The previous
+# hardcoded value (0.707, 0.707) had a SIGN ERROR that pointed the camera
+# AWAY from the workspace — verified by Check 3b: EEF projected to uv=(142,
+# -2180), wildly outside the 256x256 image. With the corrected xmat below
+# the EEF projects to uv=(128, 61), correctly near image center. Affects
+# every voxel projection — see PROJECT_STATUS row 2h.
 AGENTVIEW_XMAT_WORLD = np.array([
-    [0.0, -0.70710678, -0.70710678],
+    [0.0, -0.62834847,  0.777932  ],
     [1.0,  0.0,         0.0       ],
-    [0.0, -0.70710678,  0.70710678],
+    [0.0,  0.777932,    0.62834847],
 ], dtype=np.float64)
 
 # Wrist-cam rigid offset relative to the `robot0_right_hand` body:

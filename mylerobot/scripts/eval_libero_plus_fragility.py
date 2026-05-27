@@ -91,7 +91,8 @@ def _batched(obs: dict) -> dict:
 
 def rollout_one(env: LiberoEnv, policy, env_pre, env_post, pre, post,
                 max_steps: int, device: str, task_desc: str,
-                expected_keys: set[str] | None = None) -> dict:
+                expected_keys: set[str] | None = None,
+                drop_cam: str | None = None) -> dict:
     obs, info = env.reset(seed=None)
     policy.reset()
     success = False
@@ -104,6 +105,15 @@ def rollout_one(env: LiberoEnv, policy, env_pre, env_post, pre, post,
         # avoids OOM when sharing the GPU with other processes.
         observation["task"] = [task_desc]
         observation = env_pre(observation)
+        # Camera-dropout ablation: zero out one camera's image to simulate a
+        # sensor failure. Must happen BEFORE rename below so the key still has
+        # the env's original name (e.g. "observation.images.image").
+        if drop_cam is not None:
+            drop_key = f"observation.images.{drop_cam}"
+            if drop_key in observation:
+                v = observation[drop_key]
+                if torch.is_tensor(v):
+                    observation[drop_key] = torch.zeros_like(v)
         # Rename LIBERO env image keys -> dataset keys if the trained policy
         # expects different keys (e.g. pi0_voxel trained on Sylvest expects
         # observation.images.{front,wrist} but the env emits .image/.image2).
@@ -150,6 +160,17 @@ def parse_args() -> argparse.Namespace:
                    default=Path("/data/rnd-liu/aiprojects/lerobot/outputs/eval/pi0_libero_plus_fragility.json"))
     p.add_argument("--classification_json", type=Path,
                    default=Path("/data/rnd-liu/aiprojects/LIBERO-plus/libero/libero/benchmark/task_classification.json"))
+    p.add_argument("--corrupt_extrinsics", choices=["none", "identity", "shuffle"],
+                   default="none",
+                   help="Ablation hook for PI0VoxelPolicy: replace extrinsics with "
+                        "identity matrices or shuffle per-camera. Tests whether the "
+                        "voxel module actually uses geometry vs. just adds capacity.")
+    p.add_argument("--drop_cam", choices=["none", "image", "image2"], default="none",
+                   help="Sensor-failure ablation: zero out one camera's image at "
+                        "every step (after env_pre, before policy). 'image' drops "
+                        "the agentview cam, 'image2' drops the wrist cam. Tests "
+                        "sensor-agnostic claim — how much does the policy degrade "
+                        "when one cam is gone?")
     return p.parse_args()
 
 
@@ -170,6 +191,15 @@ def main() -> None:
     policy, pre, post, cfg = load_policy_polymorphic(args.policy_path, args.device)
     expected_input_keys = set(getattr(cfg, "input_features", {}).keys())
     print(f"[fragility] policy loaded in {time.time()-t0:.1f}s — type={type(policy).__name__}")
+
+    if args.corrupt_extrinsics != "none":
+        if not hasattr(policy, "_extrinsics_corruption"):
+            print(f"[fragility] WARNING: --corrupt_extrinsics={args.corrupt_extrinsics} "
+                  f"but policy {type(policy).__name__} has no _extrinsics_corruption hook "
+                  "(only PI0VoxelPolicy supports this). Flag will be ignored.")
+        else:
+            policy._extrinsics_corruption = args.corrupt_extrinsics
+            print(f"[fragility] EXTRINSICS CORRUPTED: mode={args.corrupt_extrinsics}")
 
     # Results: {(suite, category): {"successes": int, "total": int, "task_details": [...]}}
     results: dict = defaultdict(lambda: {"successes": 0, "total": 0, "task_details": []})
@@ -224,7 +254,8 @@ def main() -> None:
                     t1 = time.time()
                     r = rollout_one(env, policy, env_pre, env_post, pre, post,
                                     args.max_steps, args.device, task.language,
-                                    expected_keys=expected_input_keys)
+                                    expected_keys=expected_input_keys,
+                                    drop_cam=(args.drop_cam if args.drop_cam != "none" else None))
                     if hasattr(env, "close"):
                         env.close()
 
@@ -304,6 +335,8 @@ def main() -> None:
         "n_episodes_per_task": args.n_episodes_per_task,
         "max_steps": args.max_steps,
         "seed": args.seed,
+        "corrupt_extrinsics": args.corrupt_extrinsics,
+        "drop_cam": args.drop_cam,
         "wall_min": elapsed / 60.0,
         "overall_mean_pc": overall_mean,
         "per_suite": summary,

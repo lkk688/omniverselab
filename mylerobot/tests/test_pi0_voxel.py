@@ -149,6 +149,13 @@ def test_config_defaults_construct():
     assert cfg.voxel_resolution == (8, 16, 16)
     assert cfg.voxel_out_tokens == 64
     assert cfg.extrinsics_optional is True
+    assert cfg.aux_state_pred_weight == 0.0  # Road B-5 off by default
+    assert cfg.aux_state_pool == "mean"
+
+
+def test_config_accepts_aux_state_pred_weight():
+    cfg = PI0VoxelConfig(aux_state_pred_weight=0.1)
+    assert cfg.aux_state_pred_weight == 0.1
 
 
 def test_config_rejects_bad_arch():

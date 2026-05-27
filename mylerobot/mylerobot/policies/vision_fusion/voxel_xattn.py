@@ -175,7 +175,16 @@ class VoxelCrossAttnFusion(nn.Module):
         intrinsics: torch.Tensor,
         extrinsics: torch.Tensor,
         cam_mask: torch.Tensor | None = None,
+        workspace_translate: torch.Tensor | None = None,
     ) -> torch.Tensor:
+        """
+        Args (additions to original):
+            workspace_translate: (B, 3) world-frame offset applied to every
+                voxel position before projection. Use this to make the
+                workspace follow the robot (e.g. centred on observation.state
+                eef position). When None, voxel grid stays at the canonical
+                bounds passed at construction.
+        """
         if len(image_features) == 0:
             raise ValueError("image_features list is empty")
         B = image_features[0].shape[0]
@@ -210,17 +219,32 @@ class VoxelCrossAttnFusion(nn.Module):
         # Output buffer
         out_voxel_feats = torch.empty((B, Q, self.feat_channels), device=device, dtype=dtype)
 
+        if workspace_translate is not None:
+            assert workspace_translate.shape == (B, 3), workspace_translate.shape
+
         # Process queries in chunks to cap memory.
         for i in range(0, Q, self.attn_chunk):
             j = min(Q, i + self.attn_chunk)
             q_len = j - i
 
-            voxel_xyz_chunk = voxel_xyz[i:j]  # (q_len, 3)
+            voxel_xyz_chunk = voxel_xyz[i:j]  # (q_len, 3) — canonical (LOCAL) frame
             q_embed = q_embed_all[:, i:j, :]  # (B, q_len, C)
+
+            # Apply per-batch workspace translation if provided. Position
+            # embedding (q_embed) intentionally stays in canonical frame so
+            # voxel queries have consistent identity across batches; only
+            # the projection geometry shifts to "follow the robot".
+            if workspace_translate is not None:
+                voxel_xyz_chunk_proj = (
+                    voxel_xyz_chunk.unsqueeze(0)
+                    + workspace_translate.to(voxel_xyz_chunk.dtype).unsqueeze(1)
+                )  # (B, q_len, 3)
+            else:
+                voxel_xyz_chunk_proj = voxel_xyz_chunk
 
             # Project voxel centres into each camera.
             sampled, valid_mask = _project_and_sample(
-                voxel_xyz_chunk, image_features, intrinsics, extrinsics
+                voxel_xyz_chunk_proj, image_features, intrinsics, extrinsics
             )
             # sampled:    (B, q_len, N_cam, C)
             # valid_mask: (B, q_len, N_cam) bool
@@ -319,12 +343,18 @@ def _build_voxel_grid(
 
 
 def _project_and_sample(
-    voxel_xyz: torch.Tensor,           # (q_len, 3)
+    voxel_xyz: torch.Tensor,           # (q_len, 3) OR (B, q_len, 3)
     image_features: Sequence[torch.Tensor],  # list of (B, C, Hf, Wf)
     intrinsics: torch.Tensor,          # (B, N_cam, 3, 3) — in feature pixel units
     extrinsics: torch.Tensor,          # (B, N_cam, 4, 4) — world->cam OpenCV
 ) -> tuple[torch.Tensor, torch.Tensor]:
     """Project voxel centres into each camera and bilinear-sample features.
+
+    Args:
+        voxel_xyz: voxel positions in world frame. Shape (q_len, 3) for the
+            shared-across-batch case (default), or (B, q_len, 3) for the
+            per-batch case used when the workspace grid is translated by a
+            batch-dependent offset (e.g. eef-centred bounds).
 
     Returns:
         sampled: (B, q_len, N_cam, C)
@@ -333,15 +363,28 @@ def _project_and_sample(
     """
     B, N_cam = intrinsics.shape[:2]
     C = image_features[0].shape[1]
-    q_len = voxel_xyz.shape[0]
     device = voxel_xyz.device
     dtype_x = image_features[0].dtype
 
-    # Homogenize: (q_len, 4) — keep float64 for projection accuracy, cast back later.
-    ones = torch.ones(q_len, 1, device=device, dtype=extrinsics.dtype)
-    pts_homo = torch.cat([voxel_xyz.to(extrinsics.dtype), ones], dim=-1)  # (q_len, 4)
-    # Apply world->cam: (B, N_cam, 4, 4) @ (4, q_len) → (B, N_cam, 4, q_len)
-    pts_cam = torch.matmul(extrinsics, pts_homo.t())  # (B, N_cam, 4, q_len)
+    if voxel_xyz.dim() == 2:
+        # Broadcast (q_len, 3) -> (B, q_len, 3) for uniform downstream code.
+        voxel_xyz_b = voxel_xyz.unsqueeze(0).expand(B, -1, -1)
+    elif voxel_xyz.dim() == 3:
+        voxel_xyz_b = voxel_xyz
+        assert voxel_xyz_b.shape[0] == B, (
+            f"voxel_xyz batch dim {voxel_xyz_b.shape[0]} != intrinsics batch {B}"
+        )
+    else:
+        raise ValueError(f"voxel_xyz must be (q_len, 3) or (B, q_len, 3), got {voxel_xyz.shape}")
+    q_len = voxel_xyz_b.shape[1]
+
+    # Homogenize: (B, q_len, 4)
+    ones = torch.ones(B, q_len, 1, device=device, dtype=extrinsics.dtype)
+    pts_homo = torch.cat([voxel_xyz_b.to(extrinsics.dtype), ones], dim=-1)  # (B, q_len, 4)
+    # We want world->cam transform on each batch's voxel set: (B, 1, 4, q_len)
+    pts_t = pts_homo.transpose(1, 2).unsqueeze(1)  # (B, 1, 4, q_len)
+    # Broadcast over N_cam: (B, N_cam, 4, 4) @ (B, 1, 4, q_len) → (B, N_cam, 4, q_len)
+    pts_cam = torch.matmul(extrinsics, pts_t)
     # Apply intrinsics: (B, N_cam, 3, 3) @ (3, q_len) — extract first 3 rows of pts_cam
     pts_pix = torch.matmul(intrinsics, pts_cam[..., :3, :])  # (B, N_cam, 3, q_len)
     z = pts_pix[..., 2, :]  # (B, N_cam, q_len)

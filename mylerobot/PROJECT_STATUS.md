@@ -287,11 +287,18 @@ IsaacSim/
 | **2c** | **PI0VoxelPolicy from v044+10k — LIBERO-Plus fragility scan** | 4 suites × 7 cats × 10 tasks (n=280, ms=220) | **mean 38.9%** vs baseline 42.1% — see Δ table below | Camera +15pp, but overall **−3.2pp** → mixed (see notable regressions) |
 | **2d** | **+ zero-init out_proj + image augmentations — 10k LoRA + fragility** | same eval config | **mean 46.1% vs baseline 42.1% → +3.9pp overall**; Camera +5, Layout +5, Light +10, Bg +12.5, Noise ±0, Robot −5, Lang ±0 | **the fix worked**: net-positive across ALL columns except Robot Init; biggest regressions of 2c (Noise −60, Bg −60) are gone |
 | **2d'** | **+ libero_10 re-eval at ms=520 (fair budget for long-horizon suite)** | libero_10 only (n=70) | **row mean 32.9% vs baseline 25.7% → +7.2pp**; Light +30, Bg +20, Camera +10 | **fair all-suites mean: 54.3% vs baseline 48.5% → +5.7pp**; voxel-fusion advantage holds on long-horizon |
-| (TODO) | Longer training (~30k steps) to recover full Camera gain | same | TBD | zero-init slows voxel learning; 10k may not be enough to match 2c's +15pp Camera |
-| (TODO) | Augmentations-only control (`pi0_v044` + 10k LoRA + augs, NO voxel) | LIBERO-Plus | TBD | the critical ablation: are 2d gains from voxel or just augs? |
-| (TODO) | n=50/cell expansion for top results | LIBERO-Plus | TBD | n=10 CI is too wide for CoRL (±28pp at 50%); need n≥50 for significance |
-| (TODO) | π0 + VoxelUNet + occupancy aux | LIBERO-Plus | target > VoxelCrossAttn | the alt architecture |
-| (TODO) | Sensor-dropout eval (train multicam, eval with N-1 cams) | local/libero_multicam_v0 | target: graceful degradation | the killer experiment |
+| **2e** | **Augmentations-only control (`pi0_v044` + 10k LoRA + augs, NO voxel)** | full fair eval (ms=220 + libero_10 ms=520) at n=10 | **mean 42.1% (−6.4pp vs baseline)** | augs ALONE *hurt* the model; voxel-fusion appears to be load-bearing component (+12.1pp on top of augs) — **superseded by row 2e' at n=50** |
+| **2e'** | **n=50 expansion: 3-way 12-cell comparison (Camera + Bg + Light, all 4 suites)** | n=50 fair budget | baseline **60.8%**, augs-only **58.0%** (−2.8), voxel+augs **56.0%** (**−4.8**); per-column voxel-vs-baseline: Camera +8.5, Bg −10.5, Light −12.5 | **AT N=50, MOST GAINS COLLAPSE.** n=10 results were sampling noise. Only Camera column shows positive voxel effect. The +5.7pp 2d' headline was illusory. |
+| **2f** | **Extrinsics-corruption ablation (identity, shuffle) at n=50 on Camera headline cells** | libero_spatial Camera + libero_10 Camera | identity: libero_spatial 68% (vs correct 56%, **+12pp BETTER**); libero_10 38% (vs 40%, tied). shuffle: libero_spatial 58% (tied); libero_10 28% (vs 40%, **−12pp**) | **Voxel module is NOT using 3D geometry**: identity extrinsics ≈ correct or slightly better. Shuffle hurts libero_10 only (weak per-cam identity binding). Module functions as extra-capacity tokens + camera-ID embedding. |
+| **2g** | **Camera-dropout ablation (drop image / image2) on libero_spatial × Camera n=50** | 3 variants × 3 conditions | Full / drop image / drop image2: baseline 52/36/56; augs-only 38/54/48; voxel+augs 56/52/72 | **Voxel beats baseline on agentview-drop by 12pp** but **augs-only beats voxel by 20pp on same** (augs-only +16 vs voxel −4). Augs alone are the most cam-dropout robust. Voxel ≠ "sensor-agnostic." |
+| **2h** | **EXTRINSICS BUG DISCOVERED (2026-05-26)** | env probe vs hardcoded constants | `AGENTVIEW_XMAT_WORLD` had a SIGN ERROR — camera was looking AWAY from workspace. With broken xmat, EEF projects to uv=(142, **−2180**) outside 256×256 image. With env-probed xmat, EEF projects to uv=(128, 61) near image center. State[:3] is correctly in world frame (no offset needed). | **Every prior voxel experiment used wrong projections.** Suspected to explain row 2f null result. |
+| **2h.1** | Fixed-xmat eval on broken-trained ckpt | n=50 libero_spatial Camera + libero_10 Camera | libero_spatial: fixed-correct 70% vs broken-correct 56% vs identity 68% (all within noise). libero_10: **fixed-correct 16% vs broken-correct 40% vs identity 38%** (fixed-correct catastrophically worse) | Model learned to depend on BROKEN projections; switching to correct at eval is out-of-distribution on long-horizon. **Architecture HAS projection-dependence — just not the right kind.** |
+| **2h.2** | **Retrain pi0_voxel from v044 with FIXED xmat** (10k LoRA, augs on) | `lerobot/libero` | loss 0.171 (identical to broken-xmat run) | training landscape unchanged — action loss can't see extrinsics correctness |
+| **2h.3** | **DEFINITIVE: Extrinsics-corruption on fixed-xmat-trained model** | n=50 libero_spatial Camera | **correct (fixed) 52% vs identity 60%** → identity **+8pp HIGHER** than correct | **Architecture does NOT learn to use 3D geometry even when fed correct extrinsics during training.** Row 2f's null result was real, not a constants bug. |
+| **(KILLED)** | Voxel-fusion as monolithic-prefix 3D-grounding | LIBERO-Plus | ABANDONED 2026-05-26 | The bolt-on voxel-cross-attention architecture cannot learn to use geometric structure from action loss alone. Same failure mode as PointACT's monolithic VLA. |
+| (Road B-3 OC-VLA) | Camera-frame action prediction (forces extrinsics structurally load-bearing) | LIBERO-Plus | TBD | The strongest precedent for "policy uses geometry" but doesn't address architecture-level capacity |
+| (Road B-4 PointACT) | **Dual-system routing: voxel → action expert directly, bypass PaliGemma** | LIBERO-Plus | TBD | **DIRECT FIX for our exact failure mode** (PointACT showed 18.6→73.2% recovery with this) |
+| (Road B-5) | Auxiliary geometric supervision (state/depth prediction head on voxel features) | LIBERO-Plus | TBD | Cheap (1-2 days); forces voxel features to encode 3D directly. Compose with B-4. |
 
 ### Row 1e — official baseline fragility table
 
@@ -373,6 +380,125 @@ This is the table to report in the paper. Both runs use the same per-suite step 
 **Headline (paper-ready):** voxel-fusion + zero-init + augmentations gives **+5.7 pp overall** on LIBERO-Plus across all 4 suites. Largest column gains: **Light +17.5**, **Background +17.5**, **Camera +7.5**. Only negative column is Robot Initial States (−5). No regression > 10 pp on any column.
 
 **Per-suite picture:** libero_object gets the biggest lift (+18.6 row mean), libero_10 long-horizon improves (+7.2), libero_spatial holds baseline (±0), libero_goal slips slightly (−2.9 — driven by Bg/Noise where baseline was already at 100%).
+
+### Row 2e — augmentations-only ablation (isolates voxel-fusion's contribution)
+
+3-way comparison, all at fair budget (libero_10 ms=520, others ms=220, n=10/cell):
+
+| Variant | All-suites mean | Δ vs baseline |
+|---|---|---|
+| Baseline `pi0_v044` (no LoRA, no augs, no voxel) | **48.6%** | — |
+| Augs-only (`pi0_v044` + 10k LoRA + image augs, NO voxel) | **42.1%** | **−6.4** |
+| Voxel + augs (`pi0voxel_v044` + 10k LoRA + zero-init + augs) | **54.3%** | **+5.7** |
+
+**Per-column decomposition (column means across 4 suites):**
+
+| Column | Baseline | Augs-only | Voxel+augs | augs effect | **voxel effect** | total |
+|---|---|---|---|---|---|---|
+| Camera | 45.0 | 40.0 | 52.5 | −5.0 | **+12.5** | +7.5 |
+| Robot Init | 30.0 | 32.5 | 25.0 | +2.5 | −7.5 | −5.0 |
+| Layout | 60.0 | 45.0 | 65.0 | −15.0 | **+20.0** | +5.0 |
+| Light | 60.0 | 60.0 | 77.5 | ±0 | **+17.5** | +17.5 |
+| Background | 57.5 | 42.5 | 75.0 | −15.0 | **+32.5** | +17.5 |
+| Sensor Noise | 65.0 | 60.0 | 65.0 | −5.0 | +5.0 | ±0 |
+| Language | 22.5 | 15.0 | 20.0 | −7.5 | +5.0 | −2.5 |
+| **mean** | **48.6** | **42.1** | **54.3** | **−6.4** | **+12.1** | **+5.7** |
+
+**Per-suite row means (fair budget):**
+
+| Suite | Baseline | Augs-only | Voxel+augs | augs effect | voxel effect |
+|---|---|---|---|---|---|
+| libero_spatial | 58.6 | 47.1 | 58.6 | −11.5 | **+11.5** |
+| libero_object | 35.7 | 35.7 | 54.3 | ±0 | **+18.6** |
+| libero_goal | 74.3 | 68.6 | 71.4 | −5.7 | +2.9 |
+| libero_10 | 25.7 | 17.1 | 32.9 | −8.6 | **+15.8** |
+
+**Key takeaways for the paper:**
+
+1. **Image augmentations alone HURT the baseline π0** (−6.4 pp overall, −11.5 to −5.7 on three of four suites). Most likely cause: fine-tuning the action expert on augmented images drifts it off the v044 manifold without giving it useful new visual structure.
+
+2. **Voxel-fusion is the load-bearing component.** It adds **+12.1 pp on top of augs-only** (i.e. the row 2d gain of +5.7 vs baseline is *despite* the augs hurting, not because augs help). Largest voxel contributions: **Background +32.5**, **Layout +20**, **Light +17.5**, **Camera +12.5**.
+
+3. **Background Textures (+32.5pp from voxel) is the cleanest signal.** This perturbation changes the wall/table texture without touching the manipulated objects — exactly where a 3D-geometric prior should shine. Voxel-fusion grounds objects in workspace coordinates regardless of background appearance.
+
+4. **The one weakness is Robot Initial States** (voxel −7.5 vs augs-only, total −5 vs baseline). The hard-coded Panda tabletop workspace bounds don't follow the robot when its starting pose changes — projecting voxel queries to "where the workspace should be" gives wrong feature samples. **Fix candidate:** per-batch workspace bounds derived from `observation.state[:3]`.
+
+**Caveat (n=10):** Wilson 95% CI for a column mean at this n is roughly ±10 pp. The Background and Light +17.5/+32.5 effects are well outside noise; Camera +7.5 and Robot −5 are inside. Needs n=50 expansion before CoRL submission.
+
+### Row 2e' — n=50 full 3-way table (supersedes 2e at n=10)
+
+12-cell headline scan (Camera + Background + Light, all 4 suites) at n=50/cell. libero_10 at ms=520, others at ms=220.
+
+| Cell | baseline | augs-only | voxel+augs | voxel−augs | voxel−baseline |
+|---|---|---|---|---|---|
+| libero_spatial × Camera | 52 | 38 | 56 | **+18** | +4 |
+| libero_spatial × Background | 66 | 52 | 58 | +6 | −8 |
+| libero_spatial × Light | 66 | 66 | 62 | −4 | −4 |
+| libero_object × Camera | 76 | 70 | 62 | −8 | −14 |
+| libero_object × Background | 60 | 64 | 50 | −14 | −10 |
+| libero_object × Light | 54 | 50 | 62 | **+12** | +8 |
+| libero_goal × Camera | 56 | 66 | 60 | −6 | +4 |
+| libero_goal × Background | 70 | 76 | 68 | −8 | −2 |
+| libero_goal × Light | 86 | 64 | 56 | −8 | −30 |
+| libero_10 × Camera (ms=520) | 0 | 22 | 40 | **+18** | **+40** |
+| libero_10 × Background (ms=520) | 68 | 62 | 46 | −16 | −22 |
+| libero_10 × Light (ms=520) | 76 | 66 | 52 | −14 | −24 |
+| **Col mean (4 suites)** | | | | | |
+| Camera | **46.0** | 49.0 | **54.5** | **+5.5** | **+8.5** |
+| Background | **66.0** | 63.5 | 55.5 | −8.0 | −10.5 |
+| Light | **70.5** | 61.5 | 58.0 | −3.5 | −12.5 |
+| **GRAND MEAN (12 cells)** | **60.8** | **58.0** | **56.0** | **−2.0** | **−4.8** |
+
+**Sharpest result:** libero_10 × Camera — baseline **0%**, voxel+augs **40%** (**+40pp** absolute gain). This is the strongest single piece of evidence we have for voxel helping.
+
+**Most painful losses at n=50:** libero_goal × Light (−30 vs baseline), libero_10 × Background and Light (−22, −24).
+
+### Row 2f — extrinsics-corruption ablation
+
+Test: replace extrinsics with identity matrices or shuffle them per-batch. If voxel module uses 3D geometry, corruption should hurt.
+
+| | Correct | Identity | Shuffle |
+|---|---|---|---|
+| libero_spatial × Camera (n=50, ms=220) | 56% | **68%** (+12) | 58% (+2) |
+| libero_10 × Camera (n=50, ms=520) | 40% | 38% (−2) | **28%** (−12) |
+| Mean | 48 | 53 | 43 |
+
+**The voxel module does NOT function as a 3D-grounding mechanism.** Identity extrinsics (zero geometric information) match or beat correct extrinsics. Only shuffle hurts on libero_10, and only by 12pp — consistent with the module having learned a weak "this camera looks like this" identity binding, not actual 3D projection-based feature sampling.
+
+### Row 2g — camera-dropout ablation
+
+Test: zero out one of the two cameras at every timestep. Measures "sensor-agnostic" claim.
+
+`libero_spatial × Camera Viewpoints, n=50, ms=220:`
+
+| | Full | drop agentview | drop wrist |
+|---|---|---|---|
+| baseline | 52 | **36 (−16)** | 56 (+4) |
+| augs-only | 38 | **54 (+16)** | 48 (+10) |
+| voxel+augs | 56 | 52 (−4) | **72 (+16)** |
+
+**Voxel+augs is 12pp more robust to agentview-drop than baseline (−4 vs −16).** But **augs-only is 20pp more robust still** (+16 vs voxel's −4). The "sensor-agnostic" property comes from augmentations, not from voxel-fusion.
+
+**Both augs and voxel+augs perversely benefit when wrist is dropped (+10, +16).** Likely cause: on perturbed Camera tasks, the agentview is the perturbed view; the rigid-to-eef wrist view is unperturbed. The trained models had learned to over-weight the wrist features in a way that hurts on perturbed agentview. Removing the wrist forces sole reliance on agentview, which apparently works better.
+
+---
+
+## NEGATIVE FINDINGS SUMMARY (added 2026-05-26)
+
+After running n=50 ablations + extrinsics-corruption + camera-dropout (rows 2e', 2f, 2g), the architecture as built does not deliver its intended mechanism:
+
+1. **Voxel module does not use 3D geometry.** Replacing extrinsics with identity matrices doesn't hurt — sometimes helps. The cross-attention learns to use voxel tokens as extra capacity, with weak per-cam identity binding (shuffle hurts +12pp on libero_10 only). This is the same null result PointACT reported when bolting 3D tokens onto a VLM.
+
+2. **Most n=10 "wins" were sampling noise.** n=50 expansion changed sign or magnitude on 7 of 12 headline cells. The row 2e "+12.1pp voxel contribution on top of augs" claim shrinks to −2.0pp at n=50. Wilson 95% CI at n=10 is ±28pp for 50% scores — too wide to trust.
+
+3. **Augmentations alone match or beat voxel+augs on most cells at n=50.** Net augs-only effect: −2.8pp vs baseline (vs the row 2e claim of −6.4pp). Net voxel-vs-augs effect: −2.0pp (vs +12.1pp claim).
+
+4. **The one survivable signal: libero_10 × Camera Viewpoints.** Baseline 0% → voxel+augs 40%. This is a long-horizon × geometric-perturbation cell where extra capacity (even if not properly geometric) may genuinely help. Worth keeping in any paper.
+
+**Implication for paper direction:** the architecture-as-built is not publishable as a 3D-grounding method. Three options:
+- **Workshop paper / negative result**: honest report of "we built voxel-cross-attention into π0, found it doesn't use the geometry it's given, and characterize why." Defensible at workshop venues.
+- **Road B: redesign so voxel module is forced to use geometry.** Specific candidates: (1) OC-VLA-style camera-frame action prediction (makes extrinsics structurally necessary), (2) PointACT-style dual-system routing (voxel → action expert directly, not via PaliGemma prefix), (3) auxiliary geometric supervision (pose/depth aux head).
+- **Pivot to a different claim** about π0's existing capabilities (e.g., language conditioning robustness, multi-task fine-tuning, etc.).
 
 ### Image augmentations recipe (used in row 2d)
 

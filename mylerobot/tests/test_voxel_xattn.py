@@ -246,3 +246,51 @@ def test_voxel_outside_view_gets_zero_fused_feats():
     # out_proj+bias, all tokens are the same (the bias projected). So variance ≈ 0.
     var = tokens.var(dim=1).max()
     assert var < 1e-5, f"expected near-zero variance across tokens when all out of view, got {var}"
+
+
+def test_workspace_translate_shifts_projection():
+    """workspace_translate=(B,3) should move the voxel grid in world frame so
+    different batch elements see different image regions. With identity translate
+    (all zeros), output should match the no-translate path; with a large translate
+    on one batch element, that element's output should differ from the other."""
+    image_features, intrinsics, extrinsics = _make_synthetic_scene(
+        B=2, n_cam=2, feat_channels=16
+    )
+    m = VoxelCrossAttnFusion(
+        feat_channels=16, out_channels=32,
+        voxel_resolution=(4, 4, 4),
+        workspace_bounds=((-0.3, -0.3, -0.1), (0.3, 0.3, 0.4)),
+        num_heads=4, num_kv_groups=2,
+        out_tokens=16,
+        zero_init_out_proj=False,
+    )
+    # 1) Zero translate matches no-translate.
+    zero_translate = torch.zeros(2, 3)
+    out_no = m(image_features, intrinsics, extrinsics)
+    out_zero = m(image_features, intrinsics, extrinsics, workspace_translate=zero_translate)
+    torch.testing.assert_close(out_no, out_zero, atol=1e-5, rtol=1e-4)
+
+    # 2) Translate only batch 1 by a large amount → outputs should differ between batches
+    #    AND batch 0 should still match the no-translate output (since translate=0 for it).
+    big_translate = torch.tensor([[0.0, 0.0, 0.0],
+                                  [50.0, 50.0, 50.0]])
+    out_split = m(image_features, intrinsics, extrinsics, workspace_translate=big_translate)
+    torch.testing.assert_close(out_split[0], out_no[0], atol=1e-5, rtol=1e-4)
+    assert not torch.allclose(out_split[1], out_no[1], atol=1e-3), (
+        "large workspace_translate had no effect on batch 1"
+    )
+
+
+def test_workspace_translate_validates_shape():
+    image_features, intrinsics, extrinsics = _make_synthetic_scene(
+        B=2, n_cam=2, feat_channels=16
+    )
+    m = VoxelCrossAttnFusion(
+        feat_channels=16, out_channels=32,
+        voxel_resolution=(2, 2, 2),
+        workspace_bounds=((-0.1, -0.1, -0.1), (0.1, 0.1, 0.1)),
+        num_heads=1,
+        out_tokens=8,
+    )
+    with pytest.raises(AssertionError):
+        m(image_features, intrinsics, extrinsics, workspace_translate=torch.zeros(3, 3))  # wrong batch dim
