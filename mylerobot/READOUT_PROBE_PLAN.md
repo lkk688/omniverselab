@@ -191,5 +191,37 @@ Caveat: `--drop_cam image` is blunt (removes object AND table/basket/layout
 context, not just the object). A per-object image mask would be the clean version;
 this coarse cut is the cheap first read.
 
-### Ablation results
-_Pending — appended when the three-condition run finishes._
+### Ablation results (2026-05-28, libero_object, n=8/cell — PRELIMINARY)
+
+| condition | Robot Init States | Camera Viewpoints |
+|---|---|---|
+| none (baseline) | 12.5% (1/8) | **75.0%** (6/8) |
+| drop **agentview** (scene cam) | 12.5% (1/8) | **62.5%** (5/8) |
+| drop **wrist** | 12.5% (1/8) | **25.0%** (2/8) |
+
+**The story flipped — the policy is WRIST-centric, not scene-centric.**
+- On Camera Viewpoints, dropping the **agentview** (the only camera that sees the
+  object layout from afar, and where the probe found object geometry at 1.7 cm)
+  barely hurt: 75 → 62.5% (one episode of 8). Dropping the **wrist** cam hurt ~4×
+  more: 75 → 25% (four episodes).
+- So the policy leans heavily on the **wrist** close-up and **under-uses the scene
+  camera** — exactly the view that carries the decodable global object geometry.
+- This also plausibly explains the high (75%) Camera-Viewpoints baseline: under a
+  viewpoint perturbation the agentview is perturbed but the **wrist cam moves with
+  the arm (unperturbed)**, so a wrist-centric policy is naturally camera-robust —
+  by *ignoring* the perturbed global view, not by being geometrically grounded.
+- Robot Initial States sat at the 12.5% floor for all three → uninformative cell
+  (the sampled tasks were hard); ignore it.
+
+**HARD CAVEAT — n=8.** Every cell is 8 episodes; the agentview gap is literally one
+episode (within Wilson CI ±30pp). The *direction* (wrist ≫ scene reliance) is
+suggestive and the wrist gap (−50pp, 4 episodes) is larger than noise, but the
+magnitudes are not trustworthy. A larger confirmation (Camera Viewpoints only,
+~20–30 tasks, 3 conditions) is needed before acting.
+
+**Refined hypothesis for the readout fix.** The scene-camera object geometry is
+present (probe) but under-consumed (this ablation). A readout that surfaces
+scene-camera object geometry explicitly AND that the action head is forced to
+consume is the candidate lever for *novel-object-position* / harder camera
+generalization — distinct from the wrist-centric near-field strategy the policy
+currently defaults to. Confirm the ablation at larger n first.
