@@ -115,6 +115,48 @@ MuJoCo sim, no extra render), then fits three ridge probes (episode-grouped
   variant whose task files carry perturbation suffixes).
 - Fragility harness reused for rollout plumbing: `scripts/eval_libero_plus_fragility.py`.
 
-## Results
-_Pending — appended when `probe_object_grounding.py` (120 tasks, ~1000 samples,
-libero_object) finishes._
+## Results (2026-05-28, libero_object, N=1000 over 100 distinct scenes, 12 min)
+
+| probe | test RMSE (m) | vs chance | feat dim |
+|---|---|---|---|
+| chance (predict mean) | 0.1199 | 1.0× | — |
+| proprio (EEF pos) | 0.0661 | 1.8× | 3 |
+| pooled (mean over tokens) | 0.0469 | 2.6× | 2048 |
+| **spatial (location-preserving)** | **0.0169** | **7.1×** | 8192 |
+
+object position spread ‖std‖ = 0.113 m. (`outputs/eval/probe_object_grounding.json`)
+
+**Verdict — the geometry IS present, and the readout matters a lot.**
+- pi0's SigLIP features linearly encode object position. Even mean-pooled they
+  decode it to **4.7 cm** (vs 12 cm chance, 6.6 cm from EEF alone) → the encoder
+  is NOT the bottleneck.
+- A **location-preserving** readout extracts the SAME features **~2.8× more
+  precisely (1.7 cm vs 4.7 cm)**. Mean-pooling discards most of the spatial
+  precision — exactly the toy's mechanism, confirmed on the real system.
+- spatial (1.7 cm) ≪ proprio (6.6 cm) → the visual features carry object geometry
+  well beyond what the robot's EEF state trivially implies (not just "decode the
+  arm position").
+
+**Honest nuance — what this does NOT yet prove.**
+- This is the *informative* but not the *extreme* case: pooled still beats chance
+  (4.7 cm), so pooling doesn't fully destroy location. And pi0 does NOT use a
+  naive global mean-pool — it feeds all 256 SigLIP tokens to the LLM via
+  attention, which CAN in principle reach per-token spatial info. So "pooled
+  4.7 cm" is a worst-case readout, not literally pi0's.
+- The probe proves the spatial signal is PRESENT and readout-sensitive; it does
+  NOT prove the action expert actually CONSUMES it.
+- Confound noted: along rollouts the EEF approaches the object, so EEF↔object
+  correlate (hence proprio 6.6 cm). spatial ≪ proprio shows the visual decode is
+  genuine, not just arm-reading.
+
+**Next gate — the "perception-use" half (toy's closed_loop − ablated).** Perturb
+/ remove the object's visual evidence at eval and measure the success drop:
+- barely drops → policy ignores the (present, decodable) geometry → a
+  location-preserving readout the head is FORCED to consume is well-motivated;
+- drops a lot → the head already uses it → headroom is small.
+Reuse `eval_libero_plus_fragility.py --drop_cam image` (agentview) for a coarse
+version; an object-region image mask would be the clean version.
+
+**Bottom line:** first gate PASSED (geometry present + strongly readout-sensitive,
+2.8×). The use/ablation test decides whether the readout-fix build has headroom
+before committing to object-pose GT extraction + retraining.
