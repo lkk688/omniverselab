@@ -191,37 +191,46 @@ Caveat: `--drop_cam image` is blunt (removes object AND table/basket/layout
 context, not just the object). A per-object image mask would be the clean version;
 this coarse cut is the cheap first read.
 
-### Ablation results (2026-05-28, libero_object, n=8/cell — PRELIMINARY)
+### Ablation results — n=8 was MISLEADING; n=20 confirmation below
 
-| condition | Robot Init States | Camera Viewpoints |
+**n=8 (libero_object) — SUPERSEDED, do not cite.** It showed Camera-Viewpoints
+75% → drop-agentview 62.5% → drop-wrist 25%, which I read as "wrist-centric." At 8
+episodes/cell (±35pp) that was noise — the n=20 run refutes both the 75% baseline
+and the wrist-craters claim.
+
+**n=20 confirmation (libero_object + libero_spatial, 3 conditions, 2026-05-28):**
+
+Camera Viewpoints (% success, n=20):
+| condition | libero_object | libero_spatial |
 |---|---|---|
-| none (baseline) | 12.5% (1/8) | **75.0%** (6/8) |
-| drop **agentview** (scene cam) | 12.5% (1/8) | **62.5%** (5/8) |
-| drop **wrist** | 12.5% (1/8) | **25.0%** (2/8) |
+| none (both cams; agentview perturbed) | 35.0 | 50.0 |
+| drop agentview (scene cam) | 65.0 | 55.0 |
+| drop wrist | 70.0 | 65.0 |
 
-**The story flipped — the policy is WRIST-centric, not scene-centric.**
-- On Camera Viewpoints, dropping the **agentview** (the only camera that sees the
-  object layout from afar, and where the probe found object geometry at 1.7 cm)
-  barely hurt: 75 → 62.5% (one episode of 8). Dropping the **wrist** cam hurt ~4×
-  more: 75 → 25% (four episodes).
-- So the policy leans heavily on the **wrist** close-up and **under-uses the scene
-  camera** — exactly the view that carries the decodable global object geometry.
-- This also plausibly explains the high (75%) Camera-Viewpoints baseline: under a
-  viewpoint perturbation the agentview is perturbed but the **wrist cam moves with
-  the arm (unperturbed)**, so a wrist-centric policy is naturally camera-robust —
-  by *ignoring* the perturbed global view, not by being geometrically grounded.
-- Robot Initial States sat at the 12.5% floor for all three → uninformative cell
-  (the sampled tasks were hard); ignore it.
+Robot Initial States (camera ≈ canonical):
+| condition | libero_object | libero_spatial |
+|---|---|---|
+| none | 5.0 | 35.0 |
+| drop agentview | 5.0 | 35.0 |
+| drop wrist | 5.0 | 45.0 |
 
-**HARD CAVEAT — n=8.** Every cell is 8 episodes; the agentview gap is literally one
-episode (within Wilson CI ±30pp). The *direction* (wrist ≫ scene reliance) is
-suggestive and the wrist gap (−50pp, 4 episodes) is larger than noise, but the
-magnitudes are not trustworthy. A larger confirmation (Camera Viewpoints only,
-~20–30 tasks, 3 conditions) is needed before acting.
+**Corrected reading — removing EITHER camera *improves* perturbed-camera success.**
+On Camera Viewpoints, dropping agentview (object 35→65, spatial 50→55) OR wrist
+(object 35→70, spatial 50→65) both help, and the two drops are statistically
+indistinguishable (n=20 Wilson CI ≈ ±20pp). The policy is **not robustly helped by
+the cameras under viewpoint perturbation**; the perturbed scene view is at best
+unhelpful, plausibly a net liability. The "wrist-centric" story is **withdrawn**.
 
-**Refined hypothesis for the readout fix.** The scene-camera object geometry is
-present (probe) but under-consumed (this ablation). A readout that surfaces
-scene-camera object geometry explicitly AND that the action head is forced to
-consume is the candidate lever for *novel-object-position* / harder camera
-generalization — distinct from the wrist-centric near-field strategy the policy
-currently defaults to. Confirm the ablation at larger n first.
+**Honest uncertainty.** Even n=20 cells carry ±~20pp CI. The "drop helps" effect is
+clearest for object/Camera (35 vs 65–70, CIs barely overlap) and weak for spatial.
+*Why dropping the unperturbed WRIST also helps* is not cleanly explained (conflicting-
+cue removal? noise?) — flagged, not rationalized.
+
+**Implication for the readout fix.** The policy's camera-viewpoint robustness is
+NOT driven by consuming the scene camera (it does as well or better without it). So
+a readout fix is unlikely to help on these *already-survivable* perturbed tasks;
+its potential value is on **harder generalization** (novel object positions where
+proprio + wrist + memorized motion is insufficient). Whether explicit geometry can
+*add* value is what the geometry-repair eval (canonical view vs perturbed/zeroed)
+and the broader goal+10 ablation will sharpen. **Build decision deferred** until
+those land.
