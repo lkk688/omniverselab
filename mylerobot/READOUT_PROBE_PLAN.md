@@ -160,3 +160,36 @@ version; an object-region image mask would be the clean version.
 **Bottom line:** first gate PASSED (geometry present + strongly readout-sensitive,
 2.8×). The use/ablation test decides whether the readout-fix build has headroom
 before committing to object-pose GT extraction + retraining.
+
+## Ablation (perception-use) experiment — running 2026-05-28
+
+The real-system analog of the toy's `perception_use = closed_loop − ablated`.
+Same trained pi0 v044, no retraining. Run the fragility harness on libero_object
+in three conditions on the SAME deterministically-sampled tasks (so the gap is
+fair), via `eval_libero_plus_fragility.py --drop_cam {none,image,image2}`:
+
+| condition | what it removes | tests |
+|---|---|---|
+| `none` | nothing | baseline closed-loop success |
+| `image` | **agentview** cam zeroed every step | reliance on the SCENE camera (the only view that sees the object) |
+| `image2` | **wrist** cam zeroed every step | control — does losing a camera per se break it? |
+
+Categories: `Robot Initial States` (closest to clean) + `Camera Viewpoints`
+(headline), 10 tasks/category, max_steps 280.
+
+**Reading:**
+- `none ≈ image` (dropping agentview barely hurts) → the policy is NOT using the
+  scene camera → it ignores the present, decodable geometry → a location-preserving
+  readout the action head is FORCED to consume is well-motivated. Big headroom.
+- `none ≫ image` (dropping agentview craters success) → the policy DOES rely on the
+  scene camera → it already consumes visual scene info; the readout-fix headroom is
+  the *precision* gap (probe: 4.7→1.7 cm), smaller.
+- `image2` is the control: if dropping the wrist also craters, the test is
+  confounded by general OOD-sensitivity rather than object-geometry use.
+
+Caveat: `--drop_cam image` is blunt (removes object AND table/basket/layout
+context, not just the object). A per-object image mask would be the clean version;
+this coarse cut is the cheap first read.
+
+### Ablation results
+_Pending — appended when the three-condition run finishes._
