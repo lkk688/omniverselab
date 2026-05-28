@@ -251,8 +251,12 @@ robustness is NOT driven by consuming the scene camera. But this was suite-speci
 ### Geometry-repair — canonical view vs perturbed agentview, n=20
 | suite | baseline (perturbed) | repair (canonical render) | recovery |
 |---|---|---|---|
-| **libero_object** | 40 | **60** | **+20 pp** |
+| **libero_object** | 40 | 60 | +20 pp |
 | libero_spatial | 65 | 60 | −5 pp (noise) |
+| **libero_goal** | 80 | 80 | **+0 pp** |
+
+(per-suite canonical pose derived correctly at runtime — goal's differs:
+pos [0.659,0,1.610], confirming the per-suite derivation works.)
 
 **On libero_object, replacing the perturbed agentview with a canonical render
 recovers +20pp (40 → 60), with NO retraining.** Note canonical (60) ≈ drop-agentview
@@ -260,31 +264,45 @@ recovers +20pp (40 → 60), with NO retraining.** Note canonical (60) ≈ drop-a
 view, not from the policy newly exploiting geometry it was ignoring. On spatial it's
 neutral (already tolerant).
 
-## Synthesis + build decision
-The clean "readout is the lever" story from the toy/probe did NOT transfer as a
-simple win — the real picture is messier and more honest:
-1. **Geometry IS in pi0's features and is readout-sensitive** (probe, 2.8×).
-2. **But whether the policy needs the scene cam is task-dependent** — object/spatial
-   tolerate or prefer losing the perturbed view; **libero_goal genuinely uses it**.
-3. **Viewpoint-stabilization has demonstrable, no-retrain value where the perturbed
-   view hurts** (object +20pp). It is the *proxy ceiling* for what a learned
-   viewpoint-invariant geometric readout could buy on that suite.
+## Synthesis + build decision — NEGATIVE for the readout fix on LIBERO-Plus camera
 
-**Emerging publishable claim (scoped, defensible):** *a viewpoint-invariant scene
-representation improves camera-viewpoint robustness* — supported by (a) goal needs
-the scene cam and loses 15pp under perturbation, (b) a canonical/stabilized view
-recovers +20pp on object with no retraining. The readout fix would be the *learned*
-version of the canonical-render proxy.
+The goal-repair datapoint was decisive, and it kills the optimistic story:
 
-**Decisive missing datapoint (cheap, ~20 min):** geometry-repair on **libero_goal**
-— the suite that demonstrably USES the scene cam. If canonical render recovers the
-90→75 agentview-drop loss, that's the strongest single no-retrain result
-(viewpoint-stabilization protects a scene-cam-dependent suite). Run this BEFORE
-committing to the retraining build.
+1. **Geometry IS in pi0's features and is readout-sensitive** (probe, 2.8×). True.
+2. **But the policy does not have a camera-robustness deficit a geometric readout
+   could fill:**
+   - object/spatial: the perturbed scene cam is a *liability*; dropping it helps.
+     The +20pp "repair" on object is **equally achieved by simply dropping the
+     camera** (canonical 60 ≈ drop 65) → the win is "stop being confused," NOT
+     "use geometry better." No geometry needed.
+   - **libero_goal genuinely uses the scene cam (drop −15pp), BUT it is already
+     viewpoint-robust** — the perturbed view works as well as canonical
+     (80 = 80, +0pp). So there is **nothing for a viewpoint-invariant readout to
+     repair** on the suite that actually uses the scene camera.
+3. **Net: no robustness headroom for the readout fix to capture on LIBERO-Plus
+   camera.** Where the scene cam matters, the policy is already robust; where the
+   perturbation hurts, ignoring the camera (not geometry) is the fix.
 
-**Build readiness (if we proceed after goal-repair is positive):** object-pose GT
-extractable via offline MuJoCo state-replay (no re-render); readout = a learned
-viewpoint-invariant / location-preserving scene encoder feeding the action expert;
-eval on the LIBERO-Plus Camera dimension. Honest risk: the canonical-render proxy
-"undoes" the perturbation by re-rendering — a trained readout must instead learn a
-viewpoint-invariant *feature*, which is harder and may not reach the proxy ceiling.
+**DECISION: do NOT build the readout-fix retraining for LIBERO-Plus camera
+robustness.** It would likely show little, for the same reason pi0_voxel and
+act_bev showed little — pi0's robustness comes from the wrist cam + proprio + the
+VLM's own viewpoint tolerance, not from a geometric scene representation it lacks.
+This is consistent with the prior negative results; the toy mechanism is real *in
+the toy* but the real system has no matching deficit on these benchmarks.
+
+**What would change the calculus (i.e., where the readout fix could still matter):**
+- A task distribution that *requires* precise global object localization the
+  current policy lacks — e.g., **novel object positions far outside the training
+  distribution**, fine placement tolerances, or clutter/occlusion where wrist+
+  proprio is insufficient. LIBERO-Plus camera perturbations do not stress this.
+- Test cheaply first (no retrain): probe-style or scripted eval on
+  out-of-distribution object placements; only if the policy fails *there* AND the
+  failure is geometry-localization (not grasping) does the readout fix regain
+  motivation.
+
+**Bottom line:** this investigation produced a clean, honest NULL for "bolt-on /
+viewpoint-invariant geometric readout improves pi0+LIBERO-Plus camera robustness,"
+and it cost ~a day of no-retrain evals instead of ~2 weeks of a retraining build
+that would most likely have confirmed the same null. The decoupled-readout idea
+remains validated *in the toy*; it just doesn't address a deficit the real
+benchmark exposes.
