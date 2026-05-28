@@ -46,12 +46,25 @@ def train_policy(
     seed: int = 0,
     device: str = "cpu",
     shortcut_pool_size: int | None = None,
+    freeze_encoder_after_aux: bool = False,
+    aux_pretrain_epochs: int = 40,
 ):
     """Train and return (policy, train_log).
 
     shortcut_pool_size: if set, training targets are sampled from a fixed pool
         of this many targets (creates the memorizable-trajectory shortcut). If
         None, targets are uniform random (no memorization shortcut).
+
+    freeze_encoder_after_aux: TWO-STAGE DECOUPLE.
+        Stage 1 — train ONLY the perception encoder + aux head with the aux
+                  loss (no action head in the graph). Makes the encoder
+                  geometric, decoupled from the action objective.
+        Stage 2 — freeze the encoder; train the action head (+ injection-side
+                  layers) with the action loss on the now-frozen geometric
+                  features.
+        This is the decisive test of "decoupled representation + policy":
+        if it works, the prior failure was joint-training credit assignment;
+        if it still fails, the action head genuinely cannot consume geometry.
     """
     torch.manual_seed(seed)
     rng = np.random.default_rng(seed)
@@ -64,10 +77,39 @@ def train_policy(
     N = t["proprio"].shape[0]
 
     policy = ReachPolicy(proprio_dim(proprio_mode), perception_mode, injection).to(device)
-    opt = torch.optim.Adam(policy.parameters(), lr=lr)
     mse = nn.MSELoss()
+    log = {"action_loss": [], "aux_loss": [], "stage1_aux_loss": []}
 
-    log = {"action_loss": [], "aux_loss": []}
+    # ---- STAGE 1: aux-pretrain the perception module (decoupled mode only) ----
+    can_decouple = (perception_mode != "none"
+                    and (policy.aux_head is not None or policy.is_softargmax))
+    if freeze_encoder_after_aux and can_decouple:
+        stage1_params = policy.perception_params()
+        if policy.aux_head is not None:
+            stage1_params = stage1_params + list(policy.aux_head.parameters())
+        opt1 = torch.optim.Adam(stage1_params, lr=lr)
+        for ep in range(aux_pretrain_epochs):
+            perm = torch.randperm(N)
+            ep_x, nb = 0.0, 0
+            for i in range(0, N, batch_size):
+                idx = perm[i:i + batch_size]
+                perception = t["perception"][idx].to(device)
+                tgt_gt = t["tgt_gt"][idx].to(device)
+                aux_pred = policy.probe_target(perception)   # perception module only
+                aux = mse(aux_pred, tgt_gt)
+                opt1.zero_grad()
+                aux.backward()
+                opt1.step()
+                ep_x += float(aux.detach()); nb += 1
+            log["stage1_aux_loss"].append(ep_x / nb)
+        # Freeze the perception module for stage 2
+        for p in policy.perception_params():
+            p.requires_grad = False
+
+    # ---- STAGE 2 (or single-stage joint training if not decoupled) ----
+    trainable = [p for p in policy.parameters() if p.requires_grad]
+    opt = torch.optim.Adam(trainable, lr=lr)
+
     for ep in range(epochs):
         perm = torch.randperm(N)
         ep_a, ep_x = 0.0, 0.0
@@ -157,11 +199,13 @@ def eval_perception_probe(policy, perception_mode, n_episodes=100, seed=777, dev
 
 def run_one(proprio_mode="copycat", perception_mode="image", injection="concat",
             aux_weight=0.0, noise_sigma=0.0, shortcut_pool_size=None,
-            seed=0, device="cpu", verbose=True):
+            freeze_encoder_after_aux=False, seed=0, device="cpu", verbose=True):
     policy, log = train_policy(
         proprio_mode, perception_mode, injection,
         aux_weight=aux_weight, noise_sigma=noise_sigma,
-        shortcut_pool_size=shortcut_pool_size, seed=seed, device=device,
+        shortcut_pool_size=shortcut_pool_size,
+        freeze_encoder_after_aux=freeze_encoder_after_aux,
+        seed=seed, device=device,
     )
     ol = eval_open_loop(policy, proprio_mode, perception_mode, injection, device=device)
     cl = eval_closed_loop(policy, proprio_mode, perception_mode, injection, device=device)
@@ -195,11 +239,14 @@ def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument("--proprio_mode", default="copycat", choices=["oracle", "copycat", "minimal"])
     p.add_argument("--perception_mode", default="image", choices=["none", "raw", "image"])
-    p.add_argument("--injection", default="concat", choices=["concat", "xattn", "replace"])
+    p.add_argument("--injection", default="concat",
+                   choices=["concat", "xattn", "replace", "softargmax"])
     p.add_argument("--aux_weight", type=float, default=0.0)
     p.add_argument("--noise_sigma", type=float, default=0.0)
     p.add_argument("--shortcut_pool_size", type=int, default=None,
                    help="If set, train targets sampled from a fixed pool (memorization shortcut)")
+    p.add_argument("--freeze_encoder_after_aux", action="store_true",
+                   help="Two-stage decouple: aux-pretrain encoder, freeze, train action head")
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--device", default="cpu")
     return p.parse_args()
@@ -214,6 +261,7 @@ if __name__ == "__main__":
         aux_weight=args.aux_weight,
         noise_sigma=args.noise_sigma,
         shortcut_pool_size=args.shortcut_pool_size,
+        freeze_encoder_after_aux=args.freeze_encoder_after_aux,
         seed=args.seed,
         device=args.device,
     )

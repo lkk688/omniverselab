@@ -73,12 +73,17 @@ in minutes instead of GPU-days.
   decode (analogous to BEV/voxel features that must be decoded)
 
 **injection** (architecture — how perception enters the action head):
-- `concat` — perception encoder → flatten → concat to proprio → MLP (the
-  act_bev v2/v3 design that failed)
+- `concat` — perception encoder → flatten → **mean-pool** → concat to proprio →
+  MLP (the act_bev v2/v3 design that failed). Mean-pooling over the spatial grid
+  DESTROYS location.
 - `xattn` — proprio is the query, perception tokens are keys/values,
   cross-attention → action (dual-system / PointACT-style)
 - `replace` — perception decoded to an explicit `tgt_hat`, substituted into the
   proprio target slot (act_bev Option-A style)
+- `softargmax` — image → full-resolution heatmap → soft-argmax → continuous
+  `(x,y)` coordinate fed to the action head. A **location-preserving** readout
+  (the inductive bias act_bev used to hit 1.18 cm). Distinguishes a *readout*
+  failure from a *consumption* failure.
 
 ### Training knobs
 - `aux_weight` — weight on an auxiliary "predict target from perception" loss
@@ -158,30 +163,45 @@ Full matrix in `results.csv`, plot in `results.png`. Key cells:
 | img / minimal / xattn / aux | 0.15 | 0.10 | 0.30 | same — dual-system doesn't rescue |
 | img / minimal / replace / aux | 0.19 | 0.16 | 0.29 | same |
 | img / copycat / concat / pool8 | 0.06 | 0.03 | 0.67 | full causal confusion — collapses |
+| **img / minimal / softargmax** | 0.44 | 0.39 | 0.77 | location-preserving readout, no aux → already 2× concat (0.19) |
+| **img / minimal / softargmax / aux** | **0.98** | **0.95** | **0.009** | **THE FIX — aux + location-preserving readout → near-perfect** |
+| **img / minimal / softargmax / decouple** | **0.99** | **0.96** | **0.009** | two-stage (freeze aux-pretrained encoder, train head) → near-perfect |
+| img / copycat / softargmax / pool8 | 0.55 | 0.51 | 0.15 | shortcut present → readout fix degrades but survives |
+| img / copycat / softargmax / pool8 / decouple | 0.58 | 0.55 | 0.010 | decouple makes encoder geometric (probe 0.01) but shortcut still caps CL |
 | raw / min / noise 0.02 / 0.05 / 0.10 | 0.92 / 0.69 / 0.49 | — | noise monotonically degrades (no shortcut to be robust against here) |
 
 ### Findings
 
-1. **H3 CONFIRMED (the headline) — aux supervision makes features geometric but does NOT fix consumption.** `img/minimal` with aux drives the perception-probe from 0.68 (chance) to 0.30, yet closed-loop success stays flat at ~0.17. This is **the act_bev result (1.18 cm aux localization, 0/20 closed-loop) reproduced in an 8-second toy.** Geometric representation ≠ the action head using it.
+> **The headline changed.** The original run (concat/xattn/replace only) concluded
+> "aux makes features geometric but doesn't fix consumption." Adding the
+> `softargmax` readout shows that conclusion was **confounded by the readout**:
+> mean-pooling over the spatial grid destroys location and caps decode at ~0.29 L2
+> (≫ the 0.05 success radius). With a location-preserving readout the *same* aux
+> loss drives decode to 0.009 L2 and closed-loop to **0.98**. The bottleneck was
+> the **readout architecture**, not "consumption."
 
-2. **The real bottleneck is decode-through-action-loss, not architecture.** `raw` (trivial 2-number decode) → 1.00 success; `image` (CNN decode of a blob) → 0.19, regardless of injection. The credit-assignment problem of learning to extract geometry from raw sensory input *through the action loss* is the wall.
+1. **THE FIX — a location-preserving readout + aux supervision works (CL 0.98–0.99).** `img/minimal/softargmax/aux` → CL **0.98**, perc_use **0.95**, probe **0.009**. Two-stage decouple (`/decouple`: aux-pretrain the heatmap encoder, freeze it, train only the action head) → CL **0.99**. This **directly validates the user's "decoupled representation + policy" hypothesis** — once the readout preserves spatial structure, decoupled aux-pretraining gives a near-perfect policy.
 
-3. **H2 REFUTED in this toy — dual-system routing (xattn) does NOT beat concat.** raw: 0.65 vs 0.67; image: 0.20 vs 0.19. PointACT's dual-system benefit appears to be task/scale-specific, not a universal fix. **This is an important negative result that changes our Road B-4 prior** — we should not assume dual-system routing alone will rescue pi0_voxel.
+2. **The earlier "consumption failure" was largely a READOUT failure.** With mean-pool (`concat`/`xattn`/`replace`), aux drives probe only to ~0.29 and CL stays ~0.16 — because mean-pooling has already thrown away *where* the blob is, so no downstream head can recover it. This is **the act_bev "1.18 cm aux, 0/20 closed-loop" pattern reproduced AND then explained**: act_bev's BEV-token mean-pool / weak readout, not an inability of the transformer to consume geometry, is the prime suspect. Even with NO aux, `softargmax` alone (CL 0.44) already doubles concat (0.19).
 
-4. **H1 PARTIALLY confirmed — memorization shortcut suppresses perception use** (raw/copycat: 0.95 → 0.61 with pool8), demonstrating causal confusion. But the *image-decode* failure is not a shortcut problem — it persists even in `minimal` (no shortcut at all).
+3. **But the memorization shortcut is a SEPARATE, real problem the readout fix does NOT solve.** With pool8 active, `softargmax/pool8` CL drops to 0.55, and decouple recovers the *probe* to 0.010 (encoder is geometric) but CL only to 0.58 — the frozen-geometric features are available yet the action head still partly rides the memorized-trajectory shortcut. So causal confusion (de Haan 2019) is genuine and orthogonal to the readout issue: **readout fixes the no-shortcut regime; the shortcut regime needs a shortcut-breaking intervention on top.**
 
-5. **H4 inconclusive here** — noise monotonically degrades in `minimal` mode because there's no shortcut for noise-robustness to protect against. The sweet-spot test needs a shortcut-present setting (future cell).
+4. **H2 REFUTED — dual-system routing (xattn) does NOT beat concat.** raw: 0.65 vs 0.67; image: 0.20 vs 0.19. Routing the *same mean-pooled* feature through cross-attention can't recover destroyed location. PointACT's benefit appears tied to its readout/token structure, not the routing per se. **This still changes our Road B-4 prior** — don't assume dual-system routing alone rescues pi0_voxel; the readout is the lever.
+
+5. **H1 confirmed — memorization shortcut suppresses perception use** (raw/copycat: 0.95 → 0.61 with pool8; and the softargmax/pool8 result above). H4 inconclusive: noise monotonically degrades in `minimal` because there's no shortcut for robustness to protect against.
 
 ### What this means for the real project
 
-- The two prior negative results (pi0_voxel, act_bev) are now **mechanistically explained by a 30-line toy**: the action head cannot learn to extract+consume geometry from raw perception through the action loss alone, and neither aux supervision nor dual-system routing fixes it in isolation.
-- **The most promising untested lever is two-stage decoupling**: freeze an aux-pretrained (geometric) encoder, then train ONLY the action head on the frozen geometric features. If that works, the problem was joint-training credit assignment; if it still fails, the action head genuinely can't consume geometry. This is the next toy experiment, and it directly tests the user's original "decoupled representation + policy" hypothesis.
+- The prior negative results (pi0_voxel, act_bev) are now **mechanistically re-diagnosed**: the dominant failure was likely a **lossy readout** (mean-pool / weak token aggregation that discards spatial location), NOT an intrinsic inability of the action head to consume geometry. A location-preserving readout + aux supervision + (optionally) freezing the geometric encoder gives CL 0.98–0.99 in the toy.
+- **Honest caveat on transfer:** the toy's "image" is a single clean Gaussian blob with one unambiguous peak, so soft-argmax is the *exactly correct* inductive bias. Real BEV/voxel features encode cluttered multi-object scenes where a single-peak soft-argmax is not directly applicable. The toy proves the **mechanism** (readout > consumption) and that **decoupling works when the readout is right** — it does NOT prove a specific real-system module will work. The real-system analog is "a spatially-structured, location-preserving readout for the relevant object," e.g. per-object heatmap/keypoint readout, not a global pool.
+- **Two open levers for the shortcut regime**, which the readout fix alone does not close: (a) break the shortcut at the data/observation level; (b) a regularizer that penalizes proprio-only prediction.
 
 ### Next experiments (toy, before touching real hardware)
 
-- **Two-stage decouple**: `--freeze_encoder_after_aux` — pretrain encoder with aux, freeze, train action head. The decisive test.
-- **Shortcut-present noise sweep**: noise-tolerance sweet spot with pool8 shortcut active (proper H4 test).
-- **Bottleneck width sweep**: does a wider perception bottleneck / more tokens change the image-decode wall?
+- ~~Two-stage decouple~~ **DONE** — `--freeze_encoder_after_aux`; works (CL 0.99) with a location-preserving readout, partial (CL 0.58) under the memorization shortcut.
+- **Shortcut-present interventions**: combine softargmax+decouple with a shortcut-breaking knob (drop prev_action / randomize) to close the pool8 gap (0.58 → ?).
+- **Multi-object / multi-peak readout**: replace the single Gaussian blob with 2–3 blobs (distractors) and test whether soft-argmax degrades — the real test of transfer to cluttered BEV/voxel scenes.
+- **Bottleneck/token-aggregation sweep**: does an attention-pool or keypoint readout recover what mean-pool destroys, short of full soft-argmax?
 
 ## References
 

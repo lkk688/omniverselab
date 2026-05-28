@@ -49,6 +49,11 @@ class _ConvTokenizer(nn.Module):
 
     Also exposes a pooled vector via .pooled(feat). The token grid is what xattn
     consumes; concat/replace use the pooled vector / a decoded coordinate.
+
+    NOTE on the pooled() path: mean-pooling over the spatial token grid DESTROYS
+    location information — averaging a blob's features over positions loses where
+    the blob was. For a localization task this caps decode accuracy. The
+    softargmax injection path avoids this (see _SoftArgmaxHead).
     """
 
     def __init__(self):
@@ -71,12 +76,51 @@ class _ConvTokenizer(nn.Module):
         return tokens.mean(dim=1)              # (B, C)
 
 
+class _SoftArgmaxHead(nn.Module):
+    """Localization-appropriate readout: image -> heatmap -> soft-argmax -> (x,y).
+
+    Predicts a per-pixel heatmap at FULL input resolution (no spatial
+    downsampling that loses precision), softmaxes over the grid, and takes the
+    expected coordinate. This is the inductive bias act_bev used to hit 1.18 cm
+    — the spatial structure is preserved through to a continuous coordinate.
+    Output is a 2D coordinate in [-1, 1] that the action head consumes directly.
+    """
+
+    def __init__(self, size: int = IMG_SIZE):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Conv2d(1, 32, 3, padding=1), nn.ReLU(),
+            nn.Conv2d(32, 32, 3, padding=1), nn.ReLU(),
+            nn.Conv2d(32, 1, 1),            # (B, 1, size, size) heatmap logits
+        )
+        coords = torch.linspace(-1.0, 1.0, size)
+        gx, gy = torch.meshgrid(coords, coords, indexing="ij")
+        self.register_buffer("grid_x", gx.reshape(-1))  # (size*size,)
+        self.register_buffer("grid_y", gy.reshape(-1))
+
+    def forward(self, img: torch.Tensor) -> torch.Tensor:
+        logits = self.net(img).flatten(1)              # (B, size*size)
+        w = torch.softmax(logits, dim=-1)              # (B, size*size)
+        x = (w * self.grid_x).sum(-1, keepdim=True)    # (B, 1)
+        y = (w * self.grid_y).sum(-1, keepdim=True)
+        return torch.cat([x, y], dim=-1)               # (B, 2) coordinate
+
+
 class ReachPolicy(nn.Module):
     def __init__(self, proprio_dim: int, perception_mode: str, injection: str):
         super().__init__()
         self.perception_mode = perception_mode
         self.injection = injection
         self.encoder, self.perc_dim, self.is_token = make_perception_encoder(perception_mode)
+
+        self.is_softargmax = (injection == "softargmax")
+        if self.is_softargmax:
+            assert perception_mode == "image", "softargmax injection requires image perception"
+            self.softargmax = _SoftArgmaxHead()
+            # the soft-argmax module replaces the generic encoder; perc readout is a 2D coord
+            self.encoder = self.softargmax
+            self.perc_dim = 2
+            self.is_token = False
 
         if perception_mode == "none":
             in_dim = proprio_dim
@@ -89,6 +133,8 @@ class ReachPolicy(nn.Module):
             in_dim = proprio_dim + 2
             self.decoder = nn.Sequential(nn.Linear(self.perc_dim, 64), nn.ReLU(),
                                          nn.Linear(64, 2))
+        elif injection == "softargmax":
+            in_dim = proprio_dim + 2   # decoded coordinate feeds the action head
         else:
             raise ValueError(injection)
 
@@ -102,14 +148,17 @@ class ReachPolicy(nn.Module):
             nn.Linear(HIDDEN, 2),
         )
 
-        # Auxiliary target-prediction head (the cube-heatmap analog)
-        if perception_mode != "none":
+        # Auxiliary target-prediction head (the cube-heatmap analog).
+        # For softargmax, the decoded coordinate IS the aux prediction (the
+        # heatmap is supervised directly), so no separate aux MLP is needed.
+        if perception_mode == "none" or self.is_softargmax:
+            self.aux_head = None
+        else:
             self.aux_head = nn.Sequential(nn.Linear(self.perc_dim, 64), nn.ReLU(),
                                           nn.Linear(64, 2))
-        else:
-            self.aux_head = None
 
         self._last_perc_pooled = None  # stashed for aux loss
+        self._last_coord = None        # stashed soft-argmax coordinate
 
     def _encode_perception(self, perception: torch.Tensor):
         """Returns (tokens_or_none, pooled_vec)."""
@@ -128,6 +177,14 @@ class ReachPolicy(nn.Module):
         if self.perception_mode == "none":
             self._last_perc_pooled = None
             return self.head(proprio)
+
+        if self.is_softargmax:
+            coord = self.softargmax(perception)              # (B, 2) decoded coordinate
+            self._last_coord = coord
+            if perc_ablate:
+                coord = torch.zeros_like(coord)
+            x = torch.cat([proprio, coord], dim=-1)
+            return self.head(x)
 
         tokens, pooled = self._encode_perception(perception)
         self._last_perc_pooled = pooled
@@ -150,7 +207,11 @@ class ReachPolicy(nn.Module):
         return self.head(x)
 
     def aux_predict(self) -> torch.Tensor | None:
-        """Predict target from the last forward's pooled perception feature."""
+        """Predict target from the last forward's perception feature.
+        For softargmax this is the decoded coordinate (the heatmap is supervised
+        directly); otherwise it's the aux MLP on pooled features."""
+        if self.is_softargmax:
+            return self._last_coord
         if self.aux_head is None or self._last_perc_pooled is None:
             return None
         return self.aux_head(self._last_perc_pooled)
@@ -164,7 +225,18 @@ class ReachPolicy(nn.Module):
         aux head (≈ chance), which is the correct null — it tells us the
         perception probe only works when we explicitly supervise it.
         """
-        if self.perception_mode == "none" or self.aux_head is None:
+        if self.perception_mode == "none":
+            return None
+        if self.is_softargmax:
+            return self.softargmax(perception)
+        if self.aux_head is None:
             return None
         _, pooled = self._encode_perception(perception)
         return self.aux_head(pooled)
+
+    def perception_params(self):
+        """Params of the perception module to aux-pretrain + freeze in the
+        two-stage decouple. Injection-agnostic so train_policy doesn't special-case."""
+        if self.is_softargmax:
+            return list(self.softargmax.parameters())
+        return list(self.encoder.parameters())

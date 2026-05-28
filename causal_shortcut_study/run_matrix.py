@@ -21,35 +21,44 @@ from train_eval import run_one
 # Curated, informative cells (not the full cartesian product — many
 # combinations are redundant). Each tuple:
 #   (label, proprio_mode, perception_mode, injection, aux_weight,
-#    noise_sigma, shortcut_pool_size)
+#    noise_sigma, shortcut_pool_size, freeze_encoder_after_aux)
 CELLS = [
     # --- Upper bound: target handed over directly in proprio ---
-    ("oracle",                 "oracle",  "raw",   "concat", 0.0, 0.0, None),
+    ("oracle",                 "oracle",  "raw",   "concat", 0.0, 0.0, None, False),
 
     # --- Consumption study (raw = trivial decode; isolates shortcut effect) ---
-    ("raw/minimal/concat",     "minimal", "raw",   "concat", 0.0, 0.0, None),
-    ("raw/copycat/concat",     "copycat", "raw",   "concat", 0.0, 0.0, None),
-    ("raw/copycat/concat/pool8","copycat","raw",   "concat", 0.0, 0.0, 8),
-    ("raw/copycat/xattn/pool8","copycat", "raw",   "xattn",  0.0, 0.0, 8),
-    ("raw/copycat/replace/pool8","copycat","raw",  "replace",0.0, 0.0, 8),
+    ("raw/minimal/concat",     "minimal", "raw",   "concat", 0.0, 0.0, None, False),
+    ("raw/copycat/concat",     "copycat", "raw",   "concat", 0.0, 0.0, None, False),
+    ("raw/copycat/concat/pool8","copycat","raw",   "concat", 0.0, 0.0, 8, False),
+    ("raw/copycat/xattn/pool8","copycat", "raw",   "xattn",  0.0, 0.0, 8, False),
+    ("raw/copycat/replace/pool8","copycat","raw",  "replace",0.0, 0.0, 8, False),
 
     # --- Decode study (image = hard CNN decode; the realistic case) ---
-    ("img/minimal/concat",     "minimal", "image", "concat", 0.0, 0.0, None),
-    ("img/minimal/concat/aux", "minimal", "image", "concat", 0.5, 0.0, None),
-    ("img/minimal/xattn",      "minimal", "image", "xattn",  0.0, 0.0, None),
-    ("img/minimal/xattn/aux",  "minimal", "image", "xattn",  0.5, 0.0, None),
-    ("img/minimal/replace",    "minimal", "image", "replace",0.0, 0.0, None),
-    ("img/minimal/replace/aux","minimal", "image", "replace",0.5, 0.0, None),
+    ("img/minimal/concat",     "minimal", "image", "concat", 0.0, 0.0, None, False),
+    ("img/minimal/concat/aux", "minimal", "image", "concat", 0.5, 0.0, None, False),
+    ("img/minimal/xattn",      "minimal", "image", "xattn",  0.0, 0.0, None, False),
+    ("img/minimal/xattn/aux",  "minimal", "image", "xattn",  0.5, 0.0, None, False),
+    ("img/minimal/replace",    "minimal", "image", "replace",0.0, 0.0, None, False),
+    ("img/minimal/replace/aux","minimal", "image", "replace",0.5, 0.0, None, False),
 
     # --- Hardest: image decode AND shortcut available (full causal confusion) ---
-    ("img/copycat/concat/pool8","copycat","image","concat", 0.0, 0.0, 8),
-    ("img/copycat/concat/pool8/aux","copycat","image","concat",0.5,0.0,8),
-    ("img/copycat/xattn/pool8/aux","copycat","image","xattn",0.5,0.0,8),
+    ("img/copycat/concat/pool8","copycat","image","concat", 0.0, 0.0, 8, False),
+    ("img/copycat/concat/pool8/aux","copycat","image","concat",0.5,0.0,8, False),
+    ("img/copycat/xattn/pool8/aux","copycat","image","xattn",0.5,0.0,8, False),
+
+    # --- SOFT-ARGMAX READOUT (the breakthrough: location-preserving readout) ---
+    # vs the mean-pool concat/xattn/replace above, which destroy location.
+    ("img/minimal/softargmax",      "minimal","image","softargmax",0.0, 0.0, None, False),
+    ("img/minimal/softargmax/aux",  "minimal","image","softargmax",0.5, 0.0, None, False),
+    ("img/minimal/softargmax/decouple","minimal","image","softargmax",0.5,0.0,None, True),
+    # Shortcut present: does the location-preserving readout survive memorization?
+    ("img/copycat/softargmax/pool8","copycat","image","softargmax",0.0, 0.0, 8, False),
+    ("img/copycat/softargmax/pool8/decouple","copycat","image","softargmax",0.5,0.0,8, True),
 
     # --- Noise-tolerance sweet spot (raw, minimal, vary noise) ---
-    ("raw/min/noise0.02",      "minimal", "raw",   "replace",0.0, 0.02, None),
-    ("raw/min/noise0.05",      "minimal", "raw",   "replace",0.0, 0.05, None),
-    ("raw/min/noise0.10",      "minimal", "raw",   "replace",0.0, 0.10, None),
+    ("raw/min/noise0.02",      "minimal", "raw",   "replace",0.0, 0.02, None, False),
+    ("raw/min/noise0.05",      "minimal", "raw",   "replace",0.0, 0.05, None, False),
+    ("raw/min/noise0.10",      "minimal", "raw",   "replace",0.0, 0.10, None, False),
 ]
 
 FIELDS = ["label", "closed_loop_success", "ablated_success", "perception_use",
@@ -59,11 +68,12 @@ FIELDS = ["label", "closed_loop_success", "ablated_success", "perception_use",
 def run_matrix(seeds: int, out_csv: str | None):
     rows = []
     for cell in CELLS:
-        label, pm, perc, inj, auxw, noise, pool = cell
+        label, pm, perc, inj, auxw, noise, pool, freeze = cell
         per_seed = []
         for s in range(seeds):
             res = run_one(proprio_mode=pm, perception_mode=perc, injection=inj,
                           aux_weight=auxw, noise_sigma=noise, shortcut_pool_size=pool,
+                          freeze_encoder_after_aux=freeze,
                           seed=s, verbose=False)
             per_seed.append(res)
         # average the scalar metrics across seeds
