@@ -226,11 +226,65 @@ clearest for object/Camera (35 vs 65–70, CIs barely overlap) and weak for spat
 *Why dropping the unperturbed WRIST also helps* is not cleanly explained (conflicting-
 cue removal? noise?) — flagged, not rationalized.
 
-**Implication for the readout fix.** The policy's camera-viewpoint robustness is
-NOT driven by consuming the scene camera (it does as well or better without it). So
-a readout fix is unlikely to help on these *already-survivable* perturbed tasks;
-its potential value is on **harder generalization** (novel object positions where
-proprio + wrist + memorized motion is insufficient). Whether explicit geometry can
-*add* value is what the geometry-repair eval (canonical view vs perturbed/zeroed)
-and the broader goal+10 ablation will sharpen. **Build decision deferred** until
-those land.
+**Implication (interim).** On object/spatial the policy's camera-viewpoint
+robustness is NOT driven by consuming the scene camera. But this was suite-specific
+— see the overnight results below, which complicate it.
+
+## Overnight results (2026-05-28) — suite-dependent + a positive repair signal
+
+### Broader ablation — Camera Viewpoints, n=20
+| suite | none | drop agentview | drop wrist |
+|---|---|---|---|
+| libero_object | 35 | 65 | 70 |
+| libero_spatial | 50 | 55 | 65 |
+| libero_goal | **90** | **75** | 85 |
+| libero_10 | 5 | 10 | 5 (floor) |
+
+**The scene camera's value is SUITE-DEPENDENT.**
+- object / spatial: dropping the (perturbed) scene cam *helps* → the perturbed view
+  is a liability; the policy succeeds via wrist + proprio.
+- **libero_goal: dropping the agentview HURTS (90 → 75)** → here the scene camera
+  IS used (goal-conditioned tasks need the global configuration). drop-wrist hurts
+  less (90 → 85).
+- libero_10: ~5% floor (pi0 v044 is weak on long-horizon) → uninformative.
+
+### Geometry-repair — canonical view vs perturbed agentview, n=20
+| suite | baseline (perturbed) | repair (canonical render) | recovery |
+|---|---|---|---|
+| **libero_object** | 40 | **60** | **+20 pp** |
+| libero_spatial | 65 | 60 | −5 pp (noise) |
+
+**On libero_object, replacing the perturbed agentview with a canonical render
+recovers +20pp (40 → 60), with NO retraining.** Note canonical (60) ≈ drop-agentview
+(65): the gain comes from *removing the perturbation harm*, i.e. a viewpoint-stable
+view, not from the policy newly exploiting geometry it was ignoring. On spatial it's
+neutral (already tolerant).
+
+## Synthesis + build decision
+The clean "readout is the lever" story from the toy/probe did NOT transfer as a
+simple win — the real picture is messier and more honest:
+1. **Geometry IS in pi0's features and is readout-sensitive** (probe, 2.8×).
+2. **But whether the policy needs the scene cam is task-dependent** — object/spatial
+   tolerate or prefer losing the perturbed view; **libero_goal genuinely uses it**.
+3. **Viewpoint-stabilization has demonstrable, no-retrain value where the perturbed
+   view hurts** (object +20pp). It is the *proxy ceiling* for what a learned
+   viewpoint-invariant geometric readout could buy on that suite.
+
+**Emerging publishable claim (scoped, defensible):** *a viewpoint-invariant scene
+representation improves camera-viewpoint robustness* — supported by (a) goal needs
+the scene cam and loses 15pp under perturbation, (b) a canonical/stabilized view
+recovers +20pp on object with no retraining. The readout fix would be the *learned*
+version of the canonical-render proxy.
+
+**Decisive missing datapoint (cheap, ~20 min):** geometry-repair on **libero_goal**
+— the suite that demonstrably USES the scene cam. If canonical render recovers the
+90→75 agentview-drop loss, that's the strongest single no-retrain result
+(viewpoint-stabilization protects a scene-cam-dependent suite). Run this BEFORE
+committing to the retraining build.
+
+**Build readiness (if we proceed after goal-repair is positive):** object-pose GT
+extractable via offline MuJoCo state-replay (no re-render); readout = a learned
+viewpoint-invariant / location-preserving scene encoder feeding the action expert;
+eval on the LIBERO-Plus Camera dimension. Honest risk: the canonical-render proxy
+"undoes" the perturbation by re-rendering — a trained readout must instead learn a
+viewpoint-invariant *feature*, which is harder and may not reach the proxy ceiling.
