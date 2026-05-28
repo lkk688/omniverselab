@@ -19,6 +19,8 @@ SUCCESS_RADIUS = 0.05   # closed-loop success threshold
 MAX_T = 60              # max steps per episode
 IMG_SIZE = 16           # perception "image" resolution
 BLOB_SIGMA = 0.08       # Gaussian blob std (in [-1,1] coords) for the target render
+DISTRACTOR_AMP = 0.6    # distractor blobs are dimmer than the target (amp 1.0)
+DISTRACTOR_MIN_DIST = 0.3  # keep distractors this far from the target (separable)
 
 
 def expert_action(ee: np.ndarray, tgt: np.ndarray) -> np.ndarray:
@@ -28,27 +30,47 @@ def expert_action(ee: np.ndarray, tgt: np.ndarray) -> np.ndarray:
 
 
 def render_target_image(tgt: np.ndarray, size: int = IMG_SIZE,
-                        sigma: float = BLOB_SIGMA) -> np.ndarray:
-    """Render the target as a single-channel Gaussian blob on a size×size grid.
+                        sigma: float = BLOB_SIGMA,
+                        distractors: np.ndarray | None = None,
+                        distractor_amp: float = DISTRACTOR_AMP) -> np.ndarray:
+    """Render the scene as a single-channel image on a size×size grid.
+
+    The TARGET is a Gaussian blob at full intensity (1.0). Optional DISTRACTOR
+    blobs are rendered dimmer (distractor_amp) and merged with element-wise max
+    (so overlaps don't sum to a brighter artifact). Returns (1, size, size).
 
     This is the "perception that must be decoded" — analogous to a BEV/voxel
     feature map where the object location is implicit, not handed over as a
-    coordinate. Returns (1, size, size) float32 in [0, 1].
+    coordinate. With distractors present the scene is CLUTTERED: a single-peak
+    soft-argmax over the raw image would compute a centroid across all blobs, so
+    the readout's conv front-end must learn to SELECT the (brightest) target
+    peak before the soft-argmax — the real-scene transfer test. The target stays
+    distinguishable by intensity so the task remains well-posed.
     """
     coords = np.linspace(-1.0, 1.0, size, dtype=np.float32)
     gx, gy = np.meshgrid(coords, coords, indexing="ij")  # (size, size)
-    sq = (gx - tgt[0]) ** 2 + (gy - tgt[1]) ** 2
-    blob = np.exp(-0.5 * sq / (sigma ** 2)).astype(np.float32)
-    return blob[None]  # (1, size, size)
+
+    def _blob(c: np.ndarray, amp: float) -> np.ndarray:
+        sq = (gx - c[0]) ** 2 + (gy - c[1]) ** 2
+        return amp * np.exp(-0.5 * sq / (sigma ** 2))
+
+    img = _blob(tgt, 1.0)
+    if distractors is not None:
+        for d in distractors:
+            img = np.maximum(img, _blob(d, distractor_amp))
+    return img[None].astype(np.float32)  # (1, size, size)
 
 
 class ToyReachEnv:
     """2D reaching. Stateless w.r.t. dataset gen; used for both rollout + data."""
 
-    def __init__(self, rng: np.random.Generator | None = None):
+    def __init__(self, rng: np.random.Generator | None = None,
+                 n_distractors: int = 0):
         self.rng = rng or np.random.default_rng(0)
+        self.n_distractors = n_distractors
         self.ee = np.zeros(2, dtype=np.float32)
         self.tgt = np.zeros(2, dtype=np.float32)
+        self.distractors = np.zeros((0, 2), dtype=np.float32)
         self.prev_action = np.zeros(2, dtype=np.float32)
         self.t = 0
 
@@ -57,6 +79,15 @@ class ToyReachEnv:
                    else self.rng.uniform(-0.8, 0.8, 2).astype(np.float32)).copy()
         self.tgt = (tgt if tgt is not None
                     else self.rng.uniform(-0.8, 0.8, 2).astype(np.float32)).copy()
+        # Distractors: fixed for the episode, re-randomized across episodes, kept
+        # a minimum distance from the target so they remain spatially separable.
+        ds = []
+        while len(ds) < self.n_distractors:
+            d = self.rng.uniform(-0.8, 0.8, 2).astype(np.float32)
+            if np.linalg.norm(d - self.tgt) > DISTRACTOR_MIN_DIST:
+                ds.append(d)
+        self.distractors = (np.stack(ds) if ds
+                            else np.zeros((0, 2), dtype=np.float32))
         self.prev_action = np.zeros(2, dtype=np.float32)
         self.t = 0
         return self._obs_dict()
@@ -76,7 +107,7 @@ class ToyReachEnv:
             "ee": self.ee.copy(),
             "tgt": self.tgt.copy(),
             "prev_action": self.prev_action.copy(),
-            "tgt_image": render_target_image(self.tgt),
+            "tgt_image": render_target_image(self.tgt, distractors=self.distractors),
         }
 
 
@@ -113,6 +144,7 @@ def generate_dataset(
     perception_mode: str,
     seed: int = 0,
     target_pool: np.ndarray | None = None,
+    n_distractors: int = 0,
 ):
     """Roll out the expert and collect (proprio, perception, action) tuples.
 
@@ -120,13 +152,16 @@ def generate_dataset(
         used to create the "memorizable trajectory" shortcut. If None, targets
         are drawn uniformly at random (breaks the memorization shortcut).
 
+    n_distractors: number of dimmer distractor blobs added to the image
+        perception (clutter test; only affects perception_mode="image").
+
     Returns dict of np arrays:
         proprio:    (N, proprio_dim)
         perception: (N, ...) depending on perception_mode
         action:     (N, 2)
     """
     rng = np.random.default_rng(seed)
-    env = ToyReachEnv(rng=rng)
+    env = ToyReachEnv(rng=rng, n_distractors=n_distractors)
 
     proprios, perceptions, actions, tgt_gts = [], [], [], []
     for _ in range(n_episodes):

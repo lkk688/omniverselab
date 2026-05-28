@@ -21,7 +21,8 @@ from train_eval import run_one
 # Curated, informative cells (not the full cartesian product — many
 # combinations are redundant). Each tuple:
 #   (label, proprio_mode, perception_mode, injection, aux_weight,
-#    noise_sigma, shortcut_pool_size, freeze_encoder_after_aux)
+#    noise_sigma, shortcut_pool_size, freeze_encoder_after_aux[, n_distractors])
+# n_distractors defaults to 0 when omitted (8-field tuples).
 CELLS = [
     # --- Upper bound: target handed over directly in proprio ---
     ("oracle",                 "oracle",  "raw",   "concat", 0.0, 0.0, None, False),
@@ -55,6 +56,16 @@ CELLS = [
     ("img/copycat/softargmax/pool8","copycat","image","softargmax",0.0, 0.0, 8, False),
     ("img/copycat/softargmax/pool8/decouple","copycat","image","softargmax",0.5,0.0,8, True),
 
+    # --- CLUTTER (distractor blobs): does soft-argmax survive a multi-object
+    #     scene? The target is brighter; the readout must SELECT it. Real-scene
+    #     transfer test. (9th field = n_distractors) ---
+    ("img/min/softargmax/aux/2distract","minimal","image","softargmax",0.5,0.0,None,False,2),
+    ("img/min/softargmax/decouple/2distract","minimal","image","softargmax",0.5,0.0,None,True,2),
+    ("img/min/softargmax/aux/4distract","minimal","image","softargmax",0.5,0.0,None,False,4),
+    ("img/min/softargmax/decouple/4distract","minimal","image","softargmax",0.5,0.0,None,True,4),
+    # Baseline: mean-pool concat with clutter (expected to collapse harder)
+    ("img/min/concat/aux/2distract","minimal","image","concat",0.5,0.0,None,False,2),
+
     # --- Noise-tolerance sweet spot (raw, minimal, vary noise) ---
     ("raw/min/noise0.02",      "minimal", "raw",   "replace",0.0, 0.02, None, False),
     ("raw/min/noise0.05",      "minimal", "raw",   "replace",0.0, 0.05, None, False),
@@ -68,12 +79,13 @@ FIELDS = ["label", "closed_loop_success", "ablated_success", "perception_use",
 def run_matrix(seeds: int, out_csv: str | None):
     rows = []
     for cell in CELLS:
-        label, pm, perc, inj, auxw, noise, pool, freeze = cell
+        label, pm, perc, inj, auxw, noise, pool, freeze = cell[:8]
+        ndist = cell[8] if len(cell) > 8 else 0
         per_seed = []
         for s in range(seeds):
             res = run_one(proprio_mode=pm, perception_mode=perc, injection=inj,
                           aux_weight=auxw, noise_sigma=noise, shortcut_pool_size=pool,
-                          freeze_encoder_after_aux=freeze,
+                          freeze_encoder_after_aux=freeze, n_distractors=ndist,
                           seed=s, verbose=False)
             per_seed.append(res)
         # average the scalar metrics across seeds

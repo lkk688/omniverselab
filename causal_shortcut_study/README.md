@@ -90,6 +90,10 @@ in minutes instead of GPU-days.
   (the cube-heatmap analog)
 - `noise_sigma` — Gaussian noise added to the decoded/raw perception target
   during training (the Path-1 robustness knob)
+- `freeze_encoder_after_aux` — two-stage decouple: aux-pretrain the perception
+  encoder, freeze it, then train only the action head on frozen features
+- `n_distractors` — number of dimmer distractor blobs added to the image
+  perception (clutter / multi-object transfer test; image mode only)
 
 ## The four metrics (`train_eval.py`)
 
@@ -168,6 +172,11 @@ Full matrix in `results.csv`, plot in `results.png`. Key cells:
 | **img / minimal / softargmax / decouple** | **0.99** | **0.96** | **0.009** | two-stage (freeze aux-pretrained encoder, train head) → near-perfect |
 | img / copycat / softargmax / pool8 | 0.55 | 0.51 | 0.15 | shortcut present → readout fix degrades but survives |
 | img / copycat / softargmax / pool8 / decouple | 0.58 | 0.55 | 0.010 | decouple makes encoder geometric (probe 0.01) but shortcut still caps CL |
+| **img / min / softargmax / aux / 2distract** | **0.92** | 0.89 | 0.029 | CLUTTER: 2 distractors → graceful drop from 0.98 (conv selects target peak) |
+| img / min / softargmax / decouple / 2distract | 0.88 | 0.84 | 0.030 | decouple holds up under clutter |
+| **img / min / softargmax / aux / 4distract** | **0.83** | 0.82 | 0.037 | 4 distractors → still strong; probe 0.037 ≪ 0.05 success radius |
+| img / min / softargmax / decouple / 4distract | 0.82 | 0.81 | 0.037 | decouple ≈ joint under heavier clutter |
+| **img / min / concat / aux / 2distract** | **0.07** | 0.02 | 0.473 | mean-pool COLLAPSES under clutter (averages over objects) |
 | raw / min / noise 0.02 / 0.05 / 0.10 | 0.92 / 0.69 / 0.49 | — | noise monotonically degrades (no shortcut to be robust against here) |
 
 ### Findings
@@ -190,6 +199,8 @@ Full matrix in `results.csv`, plot in `results.png`. Key cells:
 
 5. **H1 confirmed — memorization shortcut suppresses perception use** (raw/copycat: 0.95 → 0.61 with pool8; and the softargmax/pool8 result above). H4 inconclusive: noise monotonically degrades in `minimal` because there's no shortcut for robustness to protect against.
 
+6. **CLUTTER TRANSFER TEST — soft-argmax degrades GRACEFULLY, mean-pool collapses.** Adding 2–4 dimmer distractor blobs (target still the brightest), softargmax+aux holds: CL 0.98 → 0.92 (2) → 0.83 (4), with probe staying at 0.029–0.037 (≪ the 0.05 success radius) — the conv front-end learns to SELECT the target peak before the soft-argmax. Two-stage decouple tracks it (0.88 / 0.82). By contrast, **mean-pool concat+aux collapses to 0.07 with just 2 distractors** (pooling now averages over multiple objects; probe blows up to 0.47). This is **direct evidence the readout, not consumption, is the lever**, and that a location-preserving readout with a *learnable selection front-end* survives multi-object scenes — the closest in-toy analog to cluttered BEV/voxel. Caveat: here the target is distinguishable by *intensity*; real scenes distinguish by shape/semantics, so the real-system readout must include a learnable object-selection stage (the conv here plays that role), not a bare soft-argmax.
+
 ### What this means for the real project
 
 - The prior negative results (pi0_voxel, act_bev) are now **mechanistically re-diagnosed**: the dominant failure was likely a **lossy readout** (mean-pool / weak token aggregation that discards spatial location), NOT an intrinsic inability of the action head to consume geometry. A location-preserving readout + aux supervision + (optionally) freezing the geometric encoder gives CL 0.98–0.99 in the toy.
@@ -199,8 +210,9 @@ Full matrix in `results.csv`, plot in `results.png`. Key cells:
 ### Next experiments (toy, before touching real hardware)
 
 - ~~Two-stage decouple~~ **DONE** — `--freeze_encoder_after_aux`; works (CL 0.99) with a location-preserving readout, partial (CL 0.58) under the memorization shortcut.
-- **Shortcut-present interventions**: combine softargmax+decouple with a shortcut-breaking knob (drop prev_action / randomize) to close the pool8 gap (0.58 → ?).
-- **Multi-object / multi-peak readout**: replace the single Gaussian blob with 2–3 blobs (distractors) and test whether soft-argmax degrades — the real test of transfer to cluttered BEV/voxel scenes.
+- ~~Multi-object / multi-peak readout~~ **DONE** — `--n_distractors`; soft-argmax degrades gracefully (0.98 → 0.83 at 4 distractors), mean-pool collapses (0.07 at 2). The conv front-end is the learnable selector.
+- **Shortcut-present interventions** (still open): combine softargmax+decouple with a shortcut-breaking knob (drop prev_action / randomize) to close the pool8 gap (0.58 → ?).
+- **Same-intensity distractors** (harder): make distractors equal-brightness so the target is identified only by an external cue — tests whether the readout can do *semantic* selection, not just intensity selection.
 - **Bottleneck/token-aggregation sweep**: does an attention-pool or keypoint readout recover what mean-pool destroys, short of full soft-argmax?
 
 ## References

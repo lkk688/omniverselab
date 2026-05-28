@@ -48,6 +48,7 @@ def train_policy(
     shortcut_pool_size: int | None = None,
     freeze_encoder_after_aux: bool = False,
     aux_pretrain_epochs: int = 40,
+    n_distractors: int = 0,
 ):
     """Train and return (policy, train_log).
 
@@ -72,7 +73,8 @@ def train_policy(
                    if shortcut_pool_size else None)
 
     data = generate_dataset(n_train_episodes, proprio_mode, perception_mode,
-                            seed=seed, target_pool=target_pool)
+                            seed=seed, target_pool=target_pool,
+                            n_distractors=n_distractors)
     t = _to_tensor(data)
     N = t["proprio"].shape[0]
 
@@ -152,8 +154,9 @@ def train_policy(
 
 @torch.no_grad()
 def eval_open_loop(policy, proprio_mode, perception_mode, injection,
-                   n_episodes=100, seed=999, device="cpu"):
-    data = generate_dataset(n_episodes, proprio_mode, perception_mode, seed=seed)
+                   n_episodes=100, seed=999, device="cpu", n_distractors=0):
+    data = generate_dataset(n_episodes, proprio_mode, perception_mode, seed=seed,
+                            n_distractors=n_distractors)
     t = _to_tensor(data)
     pred = policy(t["proprio"].to(device), t["perception"].to(device)).cpu()
     return float(((pred - t["action"]) ** 2).mean())
@@ -161,10 +164,11 @@ def eval_open_loop(policy, proprio_mode, perception_mode, injection,
 
 @torch.no_grad()
 def eval_closed_loop(policy, proprio_mode, perception_mode, injection,
-                     n_episodes=100, seed=12345, device="cpu", perc_ablate=False):
+                     n_episodes=100, seed=12345, device="cpu", perc_ablate=False,
+                     n_distractors=0):
     """Rollout on NOVEL random targets. Returns success rate."""
     rng = np.random.default_rng(seed)
-    env = ToyReachEnv(rng=rng)
+    env = ToyReachEnv(rng=rng, n_distractors=n_distractors)
     successes = 0
     for _ in range(n_episodes):
         obs = env.reset()  # random novel target
@@ -184,11 +188,13 @@ def eval_closed_loop(policy, proprio_mode, perception_mode, injection,
 
 
 @torch.no_grad()
-def eval_perception_probe(policy, perception_mode, n_episodes=100, seed=777, device="cpu"):
+def eval_perception_probe(policy, perception_mode, n_episodes=100, seed=777,
+                          device="cpu", n_distractors=0):
     """How well does target decode from the perception feature? Returns L2 (cm-like)."""
     if perception_mode == "none":
         return float("nan")
-    data = generate_dataset(n_episodes, "minimal", perception_mode, seed=seed)
+    data = generate_dataset(n_episodes, "minimal", perception_mode, seed=seed,
+                            n_distractors=n_distractors)
     t = _to_tensor(data)
     aux = policy.probe_target(t["perception"].to(device))  # bypasses proprio + head
     if aux is None:
@@ -199,20 +205,26 @@ def eval_perception_probe(policy, perception_mode, n_episodes=100, seed=777, dev
 
 def run_one(proprio_mode="copycat", perception_mode="image", injection="concat",
             aux_weight=0.0, noise_sigma=0.0, shortcut_pool_size=None,
-            freeze_encoder_after_aux=False, seed=0, device="cpu", verbose=True):
+            freeze_encoder_after_aux=False, n_distractors=0,
+            seed=0, device="cpu", verbose=True):
     policy, log = train_policy(
         proprio_mode, perception_mode, injection,
         aux_weight=aux_weight, noise_sigma=noise_sigma,
         shortcut_pool_size=shortcut_pool_size,
         freeze_encoder_after_aux=freeze_encoder_after_aux,
+        n_distractors=n_distractors,
         seed=seed, device=device,
     )
-    ol = eval_open_loop(policy, proprio_mode, perception_mode, injection, device=device)
-    cl = eval_closed_loop(policy, proprio_mode, perception_mode, injection, device=device)
+    ol = eval_open_loop(policy, proprio_mode, perception_mode, injection,
+                        device=device, n_distractors=n_distractors)
+    cl = eval_closed_loop(policy, proprio_mode, perception_mode, injection,
+                          device=device, n_distractors=n_distractors)
     cl_ablate = (eval_closed_loop(policy, proprio_mode, perception_mode, injection,
-                                  device=device, perc_ablate=True)
+                                  device=device, perc_ablate=True,
+                                  n_distractors=n_distractors)
                  if perception_mode != "none" else cl)
-    probe = eval_perception_probe(policy, perception_mode, device=device)
+    probe = eval_perception_probe(policy, perception_mode, device=device,
+                                  n_distractors=n_distractors)
     res = {
         "proprio_mode": proprio_mode,
         "perception_mode": perception_mode,
@@ -220,6 +232,7 @@ def run_one(proprio_mode="copycat", perception_mode="image", injection="concat",
         "aux_weight": aux_weight,
         "noise_sigma": noise_sigma,
         "shortcut_pool": shortcut_pool_size or 0,
+        "n_distractors": n_distractors,
         "open_loop_mse": round(ol, 5),
         "closed_loop_success": round(cl, 3),
         "ablated_success": round(cl_ablate, 3),
@@ -247,6 +260,8 @@ def parse_args():
                    help="If set, train targets sampled from a fixed pool (memorization shortcut)")
     p.add_argument("--freeze_encoder_after_aux", action="store_true",
                    help="Two-stage decouple: aux-pretrain encoder, freeze, train action head")
+    p.add_argument("--n_distractors", type=int, default=0,
+                   help="Dimmer distractor blobs added to image perception (clutter test)")
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--device", default="cpu")
     return p.parse_args()
@@ -262,6 +277,7 @@ if __name__ == "__main__":
         noise_sigma=args.noise_sigma,
         shortcut_pool_size=args.shortcut_pool_size,
         freeze_encoder_after_aux=args.freeze_encoder_after_aux,
+        n_distractors=args.n_distractors,
         seed=args.seed,
         device=args.device,
     )
